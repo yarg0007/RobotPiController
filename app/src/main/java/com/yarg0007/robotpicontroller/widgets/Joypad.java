@@ -20,6 +20,9 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
     private float baseRadius;
     private float hatRadius;
 
+    private float userInputX;
+    private float userInputY;
+
     public Joypad(Context context) {
         super(context);
         this.getHolder().addCallback(this);
@@ -67,11 +70,54 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
             return false;
         }
 
-        if (motionEvent.getAction() != MotionEvent.ACTION_UP) {
-            drawJoypad(motionEvent.getX(), motionEvent.getY());
+        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+
+            setUserInputValues(0.0f, 0.0f);
+            drawJoypad(centerX, centerY);
+
+        } else {
+
+            float localX = motionEvent.getX() - centerX;
+            float localY = motionEvent.getY() - centerY;
+
+            float inputRadius = localX * localX + localY * localY;
+            inputRadius = (float) Math.sqrt(inputRadius);
+
+            if (inputRadius > baseRadius) {
+                float adjustmentFactor = baseRadius / inputRadius;
+                localX = localX * adjustmentFactor;
+                localY = localY * adjustmentFactor;
+            }
+
+            setUserInputValues(localX, localY);
+            drawJoypad(centerX + localX, centerY + localY);
+
         }
 
-        return false;
+        return true;
+    }
+
+    public float getUserInputXPosition() {
+        return userInputX;
+    }
+
+    public float getUserInputYPosition() {
+        return userInputY;
+    }
+
+    public float getUserInputXPercentage() {
+        return getUserInputXPosition() / baseRadius;
+    }
+
+    public float getUserInputYPercentage() {
+        return getUserInputYPosition() / baseRadius;
+    }
+
+    private void setUserInputValues(float inputX, float inputY) {
+        userInputX = inputX;
+        userInputY = inputY;
+        System.out.println(String.format("user input value: %f, %f", getUserInputXPosition(), getUserInputYPosition()));
+        System.out.println(String.format("user input percentage: %f, %f", getUserInputXPercentage(), getUserInputYPercentage()));
     }
 
     private void drawJoypad(float positionX, float positionY) {
@@ -90,7 +136,7 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
         color.setARGB(255, 50, 50, 50);
         canvas.drawCircle(centerX, centerY, baseRadius, color);
 
-        // Draw the joypad circle
+        // Draw the joypad head
         color.setARGB(255 , 0,0,255);
         canvas.drawCircle(positionX, positionY, hatRadius, color);
 
@@ -103,5 +149,4 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
         baseRadius = Math.min(getWidth(), getHeight()) / 3;
         hatRadius = Math.min(getWidth(), getHeight()) / 5;
     }
-
 }
