@@ -3,18 +3,43 @@ package com.yarg0007.robotpicontroller;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.ToggleButton;
 
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 public class MainActivity extends AppCompatActivity {
 
+    Joypad leftJoypad;
+    Joypad rightJoypad;
+    Switch stickyHead;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        Joypad joypad = new Joypad(this);
-        setContentView(joypad);
+
+        // inside of Activity, you can use 'this' for the context
+        setContentView(R.layout.activity_main);
+
+        leftJoypad = findViewById(R.id.left_joystick);
+        rightJoypad = findViewById(R.id.right_joystick);
+        stickyHead = findViewById(R.id.stickyhead);
+
+        rightJoypad.setIsSticky(true);
+        stickyHead.setChecked(true);
+
+        stickyHead.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                rightJoypad.setIsSticky(isChecked);
+            }
+        });
+
+
+//        Joypad joypad = new Joypad(this);
+//        setContentView(joypad);
     }
 
     @Override

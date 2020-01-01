@@ -23,6 +23,8 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
     private float userInputX;
     private float userInputY;
 
+    private boolean isSticky = false;
+
     public Joypad(Context context) {
         super(context);
         this.getHolder().addCallback(this);
@@ -70,7 +72,7 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
             return false;
         }
 
-        if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
+        if (!isSticky && motionEvent.getAction() == MotionEvent.ACTION_UP) {
 
             setUserInputValues(0.0f, 0.0f);
             drawJoypad(centerX, centerY);
@@ -95,6 +97,10 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
         }
 
         return true;
+    }
+
+    public void setIsSticky(boolean isSticky) {
+        this.isSticky = isSticky;
     }
 
     public float getUserInputXPosition() {
@@ -147,6 +153,6 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
         centerX = getWidth()/2;
         centerY = getHeight()/2;
         baseRadius = Math.min(getWidth(), getHeight()) / 3;
-        hatRadius = Math.min(getWidth(), getHeight()) / 5;
+        hatRadius = Math.min(getWidth(), getHeight()) / 6;
     }
 }
