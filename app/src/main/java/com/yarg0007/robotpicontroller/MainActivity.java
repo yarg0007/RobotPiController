@@ -1,8 +1,11 @@
 package com.yarg0007.robotpicontroller;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +13,10 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,12 +25,14 @@ public class MainActivity extends AppCompatActivity {
     ToggleButton connectButton;
     Spinner audioSpinner;
     Switch stickyHead;
+    ToggleButton playAudioToggleButton;
+    Button speakButton;
 
     Joypad leftJoypad;
     Joypad rightJoypad;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -33,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
         audioSpinner = findViewById(R.id.audio_spinner);
+        playAudioToggleButton = findViewById(R.id.play_audio_toggle_button);
+        speakButton = findViewById(R.id.speak_button);
 
         stickyHead = findViewById(R.id.stickyhead);
 
@@ -42,7 +51,68 @@ public class MainActivity extends AppCompatActivity {
         rightJoypad.setIsSticky(true);
         stickyHead.setChecked(true);
 
-        // Wire up
+        // Wire up actions
+
+        playAudioToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+                    String selectedFileName = audioSpinner.getSelectedItem().toString();
+                    Toast.makeText(MainActivity.this, selectedFileName, Toast.LENGTH_SHORT);
+                } else {
+
+                }
+            }
+        });
+
+        connectButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked) {
+
+                    final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
+                    String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
+                    String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
+                    String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
+                    String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
+                    String savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, null);
+
+                    AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
+                    alertBuilder.setTitle(R.string.connect_alert_title);
+                    alertBuilder.setCancelable(false);
+                    alertBuilder.setPositiveButton(R.string.connect_alert_button, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            connectButton.setChecked(false);
+                            dialog.cancel();
+                        }
+                    });
+                    AlertDialog alert = alertBuilder.create();
+
+                    if (savedRtspUrlValue == null || !savedRtspUrlValue.startsWith("rtsp://") || savedRtspUrlValue.length() <= 7) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
+                        alert.show();
+                    } else if (savedSshHostValue == null || savedSshHostValue.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_host));
+                        alert.show();
+                    } else if (savedSshPortValue == null || savedSshPortValue.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_port));
+                        alert.show();
+                    } else if (savedSshUsernameValue == null || savedSshUsernameValue.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_username));
+                        alert.show();
+                    } else if (savedSshPasswordValue == null || savedSshPasswordValue.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_password));
+                        alert.show();
+                    }
+
+                } else {
+
+                }
+            }
+        });
 
         stickyHead.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

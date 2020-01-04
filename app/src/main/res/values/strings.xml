@@ -20,6 +20,14 @@
 
     <string name="save_button">Save</string>
 
+    <string name="connect_alert_title">Error</string>
+    <string name="connect_alert_message_rtsp">RTSP URL was not set. Please specify a RTSP URL in the config settings.</string>
+    <string name="connect_alert_ssh_host">SSH host was not set. Please specify a ssh host in the config settings.</string>
+    <string name="connect_alert_ssh_port">SSH port was not set. Please specify a ssh port in the config settings.</string>
+    <string name="connect_alert_ssh_username">SSH username was not set. Please specify a ssh username in the config settings.</string>
+    <string name="connect_alert_ssh_password">SSH password was not set. Please specify a ssh password in the config settings.</string>
+    <string name="connect_alert_button">Done</string>
+
     <string-array name="audio_files">
         <item>Dig</item>
         <item>Dig Dig</item>

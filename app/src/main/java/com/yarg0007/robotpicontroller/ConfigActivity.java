@@ -33,7 +33,7 @@ public class ConfigActivity extends Activity {
         sshPassword = findViewById(R.id.ssh_password_field);
         saveButton = findViewById(R.id.save_button);
 
-        final SharedPreferences sharedPreferences = getPreferences(MODE_PRIVATE);
+        final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, getResources().getString(R.string.video_stream_input));
         String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, getResources().getString(R.string.ssh_host_name_label));
         String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, getResources().getString(R.string.ssh_host_port_input));

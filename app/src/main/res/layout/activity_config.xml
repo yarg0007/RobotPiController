@@ -24,7 +24,7 @@
         android:ems="10"
         android:inputType="textPersonName"
         android:maxLines="1"
-        android:hint="@string/video_stream_url_label"
+        android:hint="rtsp://"
         android:text="@string/video_stream_input"
         android:imeOptions="actionDone"/>
     </LinearLayout>
@@ -49,7 +49,6 @@
         android:inputType="textPersonName"
         android:maxLines="1"
         android:hint="@string/ssh_host_name_label"
-        android:text="@string/ssh_host_name_label"
         android:imeOptions="actionDone"/>
     </LinearLayout>
 
@@ -96,7 +95,6 @@
         android:ems="10"
         android:maxLines="1"
         android:hint="@string/ssh_userame_label"
-        android:text="@string/ssh_userame_label"
         android:imeOptions="actionDone"/>
     </LinearLayout>
 
@@ -120,7 +118,6 @@
             android:inputType="textPassword"
             android:maxLines="1"
             android:hint="@string/ssh_password_label"
-            android:text="@string/ssh_password_label"
             android:imeOptions="actionDone"/>
     </LinearLayout>
 
