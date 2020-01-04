@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">RobotPiController</string>
+    <string name="config_button">Config</string>
+    <string name="sticky_head">Sticky Head</string>
+    <string name="toggle_audio_on">Play Audio</string>
+    <string name="toggle_audio_off">Stop Audio</string>
+    <string name="speak">Speak</string>
+
+    <string-array name="audio_files">
+        <item>Malaysia</item>
+        <item>United States</item>
+        <item>Indonesia</item>
+        <item>France</item>
+        <item>Italy</item>
+        <item>Singapore</item>
+        <item>New Zealand</item>
+        <item>India</item>
+    </string-array>
 </resources>

@@ -16,6 +16,22 @@
             android:layout_height="150dp"
             android:orientation="horizontal">
 
+            <Button
+                android:id="@+id/settings_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/config_button"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Spinner
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:entries="@array/audio_files"/>
+
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -23,10 +39,11 @@
 
             <Switch
                 android:id="@+id/stickyhead"
-                android:layout_width="wrap_content"
+                android:layout_width="5dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Sticky Head" />
+                android:text="@string/sticky_head"
+                android:layout_gravity="right"/>
         </LinearLayout>
 
         <LinearLayout
@@ -39,6 +56,31 @@
                 android:layout_width="250dp"
                 android:layout_height="250dp"
                 android:layout_gravity="bottom"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ToggleButton
+                android:id="@+id/play_audio_toggle_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:textOff="@string/toggle_audio_on"
+                android:textOn="@string/toggle_audio_off"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/speak_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="@string/speak"/>
 
             <Space
                 android:layout_width="wrap_content"

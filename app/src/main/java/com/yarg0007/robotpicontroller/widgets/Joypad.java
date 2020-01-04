@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -27,25 +28,33 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
 
     public Joypad(Context context) {
         super(context);
+        this.setZOrderOnTop(true);
         this.getHolder().addCallback(this);
+        this.getHolder().setFormat(PixelFormat.TRANSPARENT);
         setOnTouchListener(this);
     }
 
     public Joypad(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.setZOrderOnTop(true);
         this.getHolder().addCallback(this);
+        this.getHolder().setFormat(PixelFormat.TRANSPARENT);
         setOnTouchListener(this);
     }
 
     public Joypad(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.setZOrderOnTop(true);
         this.getHolder().addCallback(this);
+        this.getHolder().setFormat(PixelFormat.TRANSPARENT);
         setOnTouchListener(this);
     }
 
     public Joypad(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        this.setZOrderOnTop(true);
         this.getHolder().addCallback(this);
+        this.getHolder().setFormat(PixelFormat.TRANSPARENT);
         setOnTouchListener(this);
     }
 
