@@ -17,7 +17,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/settings_button"
+                android:id="@+id/config_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/config_button"/>
@@ -27,7 +27,20 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
+            <ToggleButton
+                android:id="@+id/connect_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOn="@string/toggle_connect_on"
+                android:textOff="@string/toggle_connect_off"/>
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
             <Spinner
+                android:id="@+id/audio_spinner"
                 android:layout_width="200dp"
                 android:layout_height="wrap_content"
                 android:entries="@array/audio_files"/>

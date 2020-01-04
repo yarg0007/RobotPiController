@@ -2,10 +2,13 @@ package com.yarg0007.robotpicontroller;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.ToggleButton;
 
@@ -13,23 +16,33 @@ import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 public class MainActivity extends AppCompatActivity {
 
+    Button configButton;
+    ToggleButton connectButton;
+    Spinner audioSpinner;
+    Switch stickyHead;
+
     Joypad leftJoypad;
     Joypad rightJoypad;
-    Switch stickyHead;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // inside of Activity, you can use 'this' for the context
         setContentView(R.layout.activity_main);
+
+        configButton = findViewById(R.id.config_button);
+        connectButton = findViewById(R.id.connect_button);
+        audioSpinner = findViewById(R.id.audio_spinner);
+
+        stickyHead = findViewById(R.id.stickyhead);
 
         leftJoypad = findViewById(R.id.left_joystick);
         rightJoypad = findViewById(R.id.right_joystick);
-        stickyHead = findViewById(R.id.stickyhead);
 
         rightJoypad.setIsSticky(true);
         stickyHead.setChecked(true);
+
+        // Wire up
 
         stickyHead.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -37,9 +50,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
-//        Joypad joypad = new Joypad(this);
-//        setContentView(joypad);
+        configButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ConfigActivity.class);
+                MainActivity.this.startActivity(intent);
+            }
+        });
     }
 
     @Override

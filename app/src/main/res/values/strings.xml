@@ -6,14 +6,29 @@
     <string name="toggle_audio_off">Stop Audio</string>
     <string name="speak">Speak</string>
 
+    <string name="toggle_connect_on">Disconnect</string>
+    <string name="toggle_connect_off">Connect</string>
+
+    <string name="video_stream_url_label">RTSP URL</string>
+    <string name="video_stream_input">rtsp://</string>
+
+    <string name="ssh_host_name_label">ssh host/ip</string>
+    <string name="ssh_host_port_label">ssh port</string>
+    <string name="ssh_host_port_input">22</string>
+    <string name="ssh_password_label">ssh password</string>
+    <string name="ssh_userame_label">ssh username</string>
+
+    <string name="save_button">Save</string>
+
     <string-array name="audio_files">
-        <item>Malaysia</item>
-        <item>United States</item>
-        <item>Indonesia</item>
-        <item>France</item>
-        <item>Italy</item>
-        <item>Singapore</item>
-        <item>New Zealand</item>
-        <item>India</item>
+        <item>Dig</item>
+        <item>Dig Dig</item>
+        <item>Diiiiig</item>
+        <item>Whats going on baby</item>
+        <item>Fart</item>
+        <item>Going Up the Country Medium</item>
+        <item>Going Up the Country Soft</item>
+        <item>Keep the change</item>
+        <item>Reverse</item>
     </string-array>
 </resources>
