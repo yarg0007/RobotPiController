@@ -19,6 +19,7 @@ import android.widget.ToggleButton;
 import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
+import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData {
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     Joypad leftJoypad;
     Joypad rightJoypad;
 
+    SshManager sshManager;
     ControllerInputThread controllerInputThread;
 
     @Override
@@ -108,13 +110,23 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         alert.setMessage(getResources().getString(R.string.connect_alert_ssh_password));
                         alert.show();
                     } else {
+
+                        if (sshManager == null) {
+                            sshManager = new SshManager();
+                        }
+
+                        if (!sshManager.startRobotServer()) {
+                            alert.setMessage(getResources().getString(R.string.robot_server_start_failure));
+                            return;
+                        }
+
                         controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
                         // TODO: set audio controls?
                         controllerInputThread.startControllerInputThread();
                     }
 
                 } else { // Disconnect
-
+                    // TODO: add a shutdown operation somewhere for ssh commands
                     if (controllerInputThread != null) {
                         controllerInputThread.stopControllerInputThread();
                     }

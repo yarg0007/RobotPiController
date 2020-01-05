@@ -37,6 +37,8 @@
     <string name="connect_alert_ssh_password">SSH password was not set. Please specify a ssh password in the config settings.</string>
     <string name="connect_alert_button">Done</string>
 
+    <string name="robot_server_start_failure">The SSH commands to start the robot server failed.</string>
+
     <string-array name="audio_files">
         <item>Dig</item>
         <item>Dig Dig</item>
