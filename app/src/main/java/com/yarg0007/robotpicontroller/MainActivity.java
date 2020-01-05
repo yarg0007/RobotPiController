@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     ToggleButton connectButton;
     Spinner audioSpinner;
     Switch stickyHead;
+    Button openMouthButton;
     ToggleButton playAudioToggleButton;
     Button speakButton;
 
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
         audioSpinner = findViewById(R.id.audio_spinner);
+        openMouthButton = findViewById(R.id.open_mouth_button);
         playAudioToggleButton = findViewById(R.id.play_audio_toggle_button);
         speakButton = findViewById(R.id.speak_button);
 
@@ -56,19 +58,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         stickyHead.setChecked(true);
 
         // Wire up actions
-
-        playAudioToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                if (isChecked) {
-                    String selectedFileName = audioSpinner.getSelectedItem().toString();
-                    Toast.makeText(MainActivity.this, selectedFileName, Toast.LENGTH_SHORT);
-                } else {
-
-                }
-            }
-        });
 
         connectButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -172,4 +161,46 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
     }
+
+    @Override
+    public float getDriveInput() {
+        return leftJoypad.getUserInputYPercentage();
+    }
+
+    @Override
+    public float getTurnInput() {
+        return leftJoypad.getUserInputXPercentage();
+    }
+
+    @Override
+    public float getHeadLiftInput() {
+        return rightJoypad.getUserInputYPercentage();
+    }
+
+    @Override
+    public float getHeadTurnInput() {
+        return rightJoypad.getUserInputXPercentage();
+    }
+
+    @Override
+    public boolean getOpenMouth() {
+        return openMouthButton.isPressed();
+    }
+
+    @Override
+    public boolean getTalking() {
+        return speakButton.isPressed();
+    }
+
+    @Override
+    public boolean getPlaySound() {
+        return playAudioToggleButton.isChecked();
+    }
+
+    @Override
+    public String getSelectedAudioFilePath() {
+        String selectedFileName = audioSpinner.getSelectedItem().toString();
+        return selectedFileName;
+    }
+
 }

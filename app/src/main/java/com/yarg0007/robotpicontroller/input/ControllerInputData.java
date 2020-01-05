@@ -3,23 +3,6 @@ package com.yarg0007.robotpicontroller.input;
 public interface ControllerInputData {
 
     /**
-     * Confirm that the controller is connected.
-     * @return True if controller is connected and functioning, false otherwise.
-     */
-    public boolean controllerConnected();
-
-    /**
-     * Get the name of the connected device.
-     * @return Name of the connected device.
-     */
-    public String getNameOfConnectedDevice();
-
-    /**
-     * Poll device for data.
-     */
-    public void pollDevice();
-
-    /**
      * Get drive direction input data. Values are expected to be in the range
      * from 1.0f to -1.0f inclusive. Bounds equate to full throttle forwards and
      * backwards respectively.
@@ -75,9 +58,4 @@ public interface ControllerInputData {
      */
     public String getSelectedAudioFilePath();
 
-    /**
-     * Serialize input data for debugging purposes.
-     * @return Serialize data.
-     */
-    public String serializeData();
 }

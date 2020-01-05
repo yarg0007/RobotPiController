@@ -95,8 +95,6 @@ public class ControllerInputThread extends Thread {
 
         while (running) {
 
-            inputData.pollDevice();
-
             driveInput = inputData.getDriveInput();
             turnInput = inputData.getTurnInput();
             headLiftInput = inputData.getHeadLiftInput();

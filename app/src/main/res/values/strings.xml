@@ -2,8 +2,9 @@
     <string name="app_name">RobotPiController</string>
     <string name="config_button">Config</string>
     <string name="sticky_head">Sticky Head</string>
-    <string name="toggle_audio_on">Play Audio</string>
-    <string name="toggle_audio_off">Stop Audio</string>
+    <string name="toggle_audio_on">Play</string>
+    <string name="toggle_audio_off">Stop</string>
+    <string name="open_mouth">Open Mouth</string>
     <string name="speak">Speak</string>
 
     <string name="toggle_connect_on">Disconnect</string>
