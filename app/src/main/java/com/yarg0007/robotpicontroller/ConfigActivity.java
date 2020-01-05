@@ -15,6 +15,8 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 public class ConfigActivity extends Activity {
 
     EditText rtspUrl;
+    EditText robotHost;
+    EditText robotPort;
     EditText sshHost;
     EditText sshPort;
     EditText sshUsername;
@@ -27,6 +29,8 @@ public class ConfigActivity extends Activity {
         setContentView(R.layout.activity_config);
 
         rtspUrl = findViewById(R.id.video_stream_input);
+        robotHost = findViewById(R.id.robot_server_host_input);
+        robotPort = findViewById(R.id.robot_server_port_input);
         sshHost = findViewById(R.id.ssh_host_field);
         sshPort = findViewById(R.id.ssh_port_field);
         sshUsername = findViewById(R.id.ssh_username_field);
@@ -35,12 +39,16 @@ public class ConfigActivity extends Activity {
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, getResources().getString(R.string.video_stream_input));
+        String savedRobotHostValue = sharedPreferences.getString(SettingKeys.robotHost, "");
+        String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotPort, "");
         String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, getResources().getString(R.string.ssh_host_name_label));
         String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, getResources().getString(R.string.ssh_host_port_input));
         String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, getResources().getString(R.string.ssh_userame_label));
         String savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, "");
 
         rtspUrl.setText(savedRtspUrlValue);
+        robotHost.setText(savedRobotHostValue);
+        robotPort.setText(savedRobotPortValue);
         sshHost.setText(savedSshHostValue);
         sshPort.setText(savedSshPortValue);
         sshUsername.setText(savedSshUsernameValue);
@@ -52,12 +60,16 @@ public class ConfigActivity extends Activity {
                 SharedPreferences.Editor sharedPreferencesEditor = sharedPreferences.edit();
 
                 String rtspValue = rtspUrl.getText().toString();
+                String robotHostValue = robotHost.getText().toString();
+                String robotPortValue = robotPort.getText().toString();
                 String sshHostValue = sshHost.getText().toString();
                 String sshPortValue = sshPort.getText().toString();
                 String sshUsernameValue = sshUsername.getText().toString();
                 String sshPasswordValue = sshPassword.getText().toString();
 
                 sharedPreferencesEditor.putString(SettingKeys.rtspUrl, rtspValue);
+                sharedPreferencesEditor.putString(SettingKeys.robotHost, robotHostValue);
+                sharedPreferencesEditor.putString(SettingKeys.robotPort, robotPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshHost, sshHostValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshPort, sshPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshUsername, sshUsernameValue);

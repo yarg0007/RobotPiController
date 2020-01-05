@@ -13,15 +13,23 @@
     <string name="video_stream_input">rtsp://</string>
 
     <string name="ssh_host_name_label">ssh host/ip</string>
+    <string name="ssh_host_name_hint">ssh host/ip (likely same as robot host/ip)</string>
     <string name="ssh_host_port_label">ssh port</string>
     <string name="ssh_host_port_input">22</string>
     <string name="ssh_password_label">ssh password</string>
     <string name="ssh_userame_label">ssh username</string>
 
+    <string name="server_host_label">Robot host/ip</string>
+    <string name="server_host_hint">robotpi.local</string>
+    <string name="server_port_label">Robot port</string>
+    <string name="server_port_hint">49801</string>
+
     <string name="save_button">Save</string>
 
     <string name="connect_alert_title">Error</string>
     <string name="connect_alert_message_rtsp">RTSP URL was not set. Please specify a RTSP URL in the config settings.</string>
+    <string name="connect_alert_message_robot_host">Robot host was not set. Please specify a host for your robot.</string>
+    <string name="connect_alert_message_robot_port">Robot port was not set. Please specify a port for your robot.</string>
     <string name="connect_alert_ssh_host">SSH host was not set. Please specify a ssh host in the config settings.</string>
     <string name="connect_alert_ssh_port">SSH port was not set. Please specify a ssh port in the config settings.</string>
     <string name="connect_alert_ssh_username">SSH username was not set. Please specify a ssh username in the config settings.</string>

@@ -16,10 +16,12 @@ import android.widget.Switch;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.yarg0007.robotpicontroller.input.ControllerInputData;
+import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ControllerInputData {
 
     Button configButton;
     ToggleButton connectButton;
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
 
     Joypad leftJoypad;
     Joypad rightJoypad;
+
+    ControllerInputThread controllerInputThread;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -74,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
                     final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
                     String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
+                    String savedRobotHost = sharedPreferences.getString(SettingKeys.robotHost, null);
+                    String savedRobotport = sharedPreferences.getString(SettingKeys.robotPort, null);
                     String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
                     String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
                     String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
@@ -94,6 +100,12 @@ public class MainActivity extends AppCompatActivity {
                     if (savedRtspUrlValue == null || !savedRtspUrlValue.startsWith("rtsp://") || savedRtspUrlValue.length() <= 7) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
                         alert.show();
+                    } else if (savedRobotHost == null || savedRobotHost.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_host));
+                        alert.show();
+                    } else if (savedRobotport == null || savedRobotport.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_port));
+                        alert.show();
                     } else if (savedSshHostValue == null || savedSshHostValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_ssh_host));
                         alert.show();
@@ -106,10 +118,17 @@ public class MainActivity extends AppCompatActivity {
                     } else if (savedSshPasswordValue == null || savedSshPasswordValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_ssh_password));
                         alert.show();
+                    } else {
+                        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
+                        // TODO: set audio controls?
+                        controllerInputThread.startControllerInputThread();
                     }
 
-                } else {
+                } else { // Disconnect
 
+                    if (controllerInputThread != null) {
+                        controllerInputThread.stopControllerInputThread();
+                    }
                 }
             }
         });
