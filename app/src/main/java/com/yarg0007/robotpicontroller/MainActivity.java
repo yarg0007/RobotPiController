@@ -6,15 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.Toast;
 import android.widget.ToggleButton;
+import android.widget.VideoView;
 
 import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
@@ -22,7 +22,11 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData {
+import org.videolan.libvlc.IVLCVout;
+
+public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
+
+    VideoView videoView;
 
     Button configButton;
     ToggleButton connectButton;
@@ -38,11 +42,22 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     SshManager sshManager;
     ControllerInputThread controllerInputThread;
 
+    String savedRtspUrlValue;
+    String savedRobotHost;
+    String savedRobotport;
+    String savedSshHostValue;
+    String savedSshPortValue;
+    String savedSshUsernameValue;
+    String savedSshPasswordValue;
+    boolean connected = false;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        videoView = findViewById(R.id.video_view);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
@@ -67,14 +82,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                 if (isChecked) {
 
-                    final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
-                    String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
-                    String savedRobotHost = sharedPreferences.getString(SettingKeys.robotHost, null);
-                    String savedRobotport = sharedPreferences.getString(SettingKeys.robotPort, null);
-                    String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
-                    String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
-                    String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
-                    String savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, null);
+                    getConfigurationValues();
 
                     AlertDialog.Builder alertBuilder = new AlertDialog.Builder(MainActivity.this);
                     alertBuilder.setTitle(R.string.connect_alert_title);
@@ -117,19 +125,27 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                         if (!sshManager.startRobotServer()) {
                             alert.setMessage(getResources().getString(R.string.robot_server_start_failure));
+                            alert.show();
                             return;
                         }
 
-                        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
+                        //controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
                         // TODO: set audio controls?
-                        controllerInputThread.startControllerInputThread();
+                        //controllerInputThread.startControllerInputThread();
+
+                        startVideo();
+
+                        connected = true;
                     }
 
                 } else { // Disconnect
+                    connected = false;
                     // TODO: add a shutdown operation somewhere for ssh commands
                     if (controllerInputThread != null) {
                         controllerInputThread.stopControllerInputThread();
                     }
+
+                    stopVideo();
                 }
             }
         });
@@ -150,11 +166,58 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getConfigurationValues();
+        if (connected) {
+            startVideo();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopVideo();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopVideo();
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
         if (hasWindowFocus) {
             hideSystemUI();
         }
+    }
+
+    private void startVideo() {
+        videoView = findViewById(R.id.video_view);
+        Uri video = Uri.parse(savedRtspUrlValue);
+        videoView.setVideoURI(video);
+        videoView.start();
+    }
+
+    private void stopVideo() {
+
+        if (videoView != null) {
+            videoView.stopPlayback();
+        }
+    }
+
+    private void getConfigurationValues() {
+
+        final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
+        savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
+        savedRobotHost = sharedPreferences.getString(SettingKeys.robotHost, null);
+        savedRobotport = sharedPreferences.getString(SettingKeys.robotPort, null);
+        savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
+        savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
+        savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
+        savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, null);
     }
 
     private void hideSystemUI() {
@@ -215,4 +278,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         return selectedFileName;
     }
 
+    @Override
+    public void onSurfacesCreated(IVLCVout vlcVout) {
+
+    }
+
+    @Override
+    public void onSurfacesDestroyed(IVLCVout vlcVout) {
+
+    }
 }
