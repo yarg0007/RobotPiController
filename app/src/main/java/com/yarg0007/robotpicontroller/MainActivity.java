@@ -129,9 +129,9 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                             return;
                         }
 
-                        //controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
+                        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
                         // TODO: set audio controls?
-                        //controllerInputThread.startControllerInputThread();
+                        controllerInputThread.startControllerInputThread();
 
                         startVideo();
 

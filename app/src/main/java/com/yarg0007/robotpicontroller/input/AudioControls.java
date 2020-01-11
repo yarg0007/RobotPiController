@@ -8,7 +8,7 @@ public interface AudioControls {
      * Play an audio file.
      * @param audioFile Audio file to play.
      */
-    public void playAudioFile(File audioFile);
+    public void playAudioFile(String audioFile);
 
     /**
      * Stop playing audio file.

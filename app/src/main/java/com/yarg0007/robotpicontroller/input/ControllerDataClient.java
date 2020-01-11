@@ -39,7 +39,12 @@ public class ControllerDataClient {
 
         this.serverPort = serverPort;
         this.serverAddress = serverAddress;
+    }
 
+    /**
+     * Open the connection. Must be called before sending data.
+     */
+    public void open() {
         init();
     }
 
@@ -77,18 +82,22 @@ public class ControllerDataClient {
      */
     private void init() {
 
-        try {
-            this.server = InetAddress.getByName(serverAddress);
-        } catch (UnknownHostException e1) {
-            e1.printStackTrace();
-            return;
+        if (server == null) {
+            try {
+                server = InetAddress.getByName(serverAddress);
+            } catch (UnknownHostException e1) {
+                e1.printStackTrace();
+                return;
+            }
         }
 
-        try {
-            clientDatagramSocket = new DatagramSocket();
-        } catch (SocketException e) {
-            e.printStackTrace();
-            return;
+        if (clientDatagramSocket == null) {
+            try {
+                clientDatagramSocket = new DatagramSocket();
+            } catch (SocketException e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 }

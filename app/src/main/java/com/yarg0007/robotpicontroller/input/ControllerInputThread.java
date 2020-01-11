@@ -93,6 +93,8 @@ public class ControllerInputThread extends Thread {
     @Override
     public void run() {
 
+        controllerDataClient.open();
+
         while (running) {
 
             driveInput = inputData.getDriveInput();
@@ -125,10 +127,9 @@ public class ControllerInputThread extends Thread {
 
             if (playSoundInput) {
                 if (soundFilePath != null) {
-                    File audioFile = new File(soundFilePath);
-                    audioControls.playAudioFile(audioFile);
+                    audioControls.playAudioFile(soundFilePath);
 
-                    if (audioFile.getName().startsWith(SPEAK_FILE_PREFIX)) {
+                    if (soundFilePath.contains(SPEAK_FILE_PREFIX)) {
                         soundInputShouldMoveMouth = true;
                     }
 
