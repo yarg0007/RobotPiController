@@ -40,14 +40,23 @@
     <string name="robot_server_start_failure">The SSH commands to start the robot server failed.</string>
 
     <string-array name="audio_files">
-        <item>Dig</item>
-        <item>Dig Dig</item>
-        <item>Diiiiig</item>
-        <item>Whats going on baby</item>
-        <item>Fart</item>
-        <item>Going Up the Country Medium</item>
-        <item>Going Up the Country Soft</item>
-        <item>Keep the change</item>
-        <item>Reverse</item>
+        <item>fart.wav</item>
+        <item>honk.wav</item>
+        <item>jeopardyFinal.wav</item>
+        <item>music_GoingUpTheCountry_mid.wav</item>
+        <item>music_GoingUpTheCountry_soft.wav</item>
+        <item>music_MasterOfUniverse.wav</item>
+        <item>priceIsRightFail.wav</item>
+        <item>reverse.wav</item>
+        <item>speak_dig.wav</item>
+        <item>speak_digIt.wav</item>
+        <item>speak_double_dig.wav</item>
+        <item>speak_iCanDigIt.wav</item>
+        <item>speak_imAfraidICantDoThat.wav</item>
+        <item>speak_keepTheChangeYouFilthyAnimal.wav</item>
+        <item>speak_miniMe.wav</item>
+        <item>speak_uberDig.wav</item>
+        <item>speak_whatsGoingOnBaby.wav</item>
+        <item>speak_whatsHappenin.wav</item>
     </string-array>
 </resources>
