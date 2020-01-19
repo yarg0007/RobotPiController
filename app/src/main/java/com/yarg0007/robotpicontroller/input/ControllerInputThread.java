@@ -125,23 +125,25 @@ public class ControllerInputThread extends Thread {
 
             soundInputShouldMoveMouth = false;
 
-            if (playSoundInput) {
-                if (soundFilePath != null) {
-                    audioControls.playAudioFile(soundFilePath);
+            if (audioControls != null) {
+                if (playSoundInput) {
+                    if (soundFilePath != null) {
+                        audioControls.playAudioFile(soundFilePath);
 
-                    if (soundFilePath.contains(SPEAK_FILE_PREFIX)) {
-                        soundInputShouldMoveMouth = true;
+                        if (soundFilePath.contains(SPEAK_FILE_PREFIX)) {
+                            soundInputShouldMoveMouth = true;
+                        }
+
                     }
-
+                } else {
+                    audioControls.stopAudioFile();
                 }
-            } else {
-                audioControls.stopAudioFile();
-            }
 
-            if (talkingInput) {
-                audioControls.playMicrophone();
-            } else {
-                audioControls.stopMicrophone();
+                if (talkingInput) {
+                    audioControls.playMicrophone();
+                } else {
+                    audioControls.stopMicrophone();
+                }
             }
 
             // Override talkingInput to cause robot to speak the audio file

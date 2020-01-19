@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     });
                     AlertDialog alert = alertBuilder.create();
 
-                    if (savedRtspUrlValue == null || !savedRtspUrlValue.startsWith("rtsp://") || savedRtspUrlValue.length() <= 7) {
+                    if (savedRtspUrlValue == null || savedRtspUrlValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
                         alert.show();
                     } else if (savedRobotHost == null || savedRobotHost.isEmpty()) {
