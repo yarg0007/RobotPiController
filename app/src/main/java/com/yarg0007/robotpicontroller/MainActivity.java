@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     private void stopVideo() {
 
-        if (videoView != null) {
+        if (mMediaPlayer != null) {
             mMediaPlayer.stop();
             mMediaPlayer.detachViews();
         }
