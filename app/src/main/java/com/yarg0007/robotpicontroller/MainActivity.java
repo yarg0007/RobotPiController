@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -28,7 +29,6 @@ import org.videolan.libvlc.Media;
 import org.videolan.libvlc.MediaPlayer;
 import org.videolan.libvlc.util.VLCVideoLayout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     VLCVideoLayout videoView;
 
-    LibVLC mLibVLC = null;
-    MediaPlayer mMediaPlayer = null;
+    LibVLC libVLC = null;
+    MediaPlayer mediaPlayer = null;
 
     Button configButton;
     ToggleButton connectButton;
@@ -72,8 +72,12 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
-        mLibVLC = new LibVLC(this, args);
-        mMediaPlayer = new MediaPlayer(mLibVLC);
+        args.add("--avcodec-hw=none");
+        args.add("--http-reconnect");
+        args.add("--aout=opensles");
+        args.add("--audio-time-stretch");
+        args.add("--network-caching="+6*1000);
+        libVLC = new LibVLC(this, args);
 
         videoView = findViewById(R.id.video_layout);
 
@@ -202,8 +206,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     protected void onDestroy() {
         super.onDestroy();
         stopVideo();
-        mMediaPlayer.release();
-        mLibVLC.release();
+        mediaPlayer.release();
+        libVLC.release();
     }
 
     @Override
@@ -219,21 +223,21 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
             videoView = findViewById(R.id.video_layout);
         }
         Uri video = Uri.parse(savedRtspUrlValue);
+        Media media = new Media(libVLC, video);
+        mediaPlayer = new MediaPlayer(media);
 
-        mMediaPlayer.attachViews(videoView, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
+        mediaPlayer.attachViews(videoView, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
 
-        final Media media = new Media(mLibVLC, video);
-        mMediaPlayer.setMedia(media);
         media.release();
 
-        mMediaPlayer.play();
+        mediaPlayer.play();
     }
 
     private void stopVideo() {
 
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.detachViews();
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.detachViews();
         }
     }
 
