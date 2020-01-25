@@ -86,7 +86,7 @@ public class ControllerDataClient {
             try {
                 server = InetAddress.getByName(serverAddress);
             } catch (UnknownHostException e1) {
-                e1.printStackTrace();
+         //       e1.printStackTrace();
                 return;
             }
         }

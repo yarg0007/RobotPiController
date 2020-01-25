@@ -36,10 +36,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
 
-    VLCVideoLayout videoView;
-
-    LibVLC mLibVLC = null;
-    MediaPlayer mMediaPlayer = null;
+    VideoView videoView;
 
     Button configButton;
     ToggleButton connectButton;
@@ -72,8 +69,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
-        mLibVLC = new LibVLC(this, args);
-        mMediaPlayer = new MediaPlayer(mLibVLC);
 
         videoView = findViewById(R.id.video_layout);
 
@@ -202,8 +197,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     protected void onDestroy() {
         super.onDestroy();
         stopVideo();
-        mMediaPlayer.release();
-        mLibVLC.release();
     }
 
     @Override
@@ -220,20 +213,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         }
         Uri video = Uri.parse(savedRtspUrlValue);
 
-        mMediaPlayer.attachViews(videoView, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
-
-        final Media media = new Media(mLibVLC, video);
-        mMediaPlayer.setMedia(media);
-        media.release();
-
-        mMediaPlayer.play();
+        videoView.setVideoURI(video);
     }
 
     private void stopVideo() {
 
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.detachViews();
+        if (videoView != null) {
+            videoView.stopPlayback();
         }
     }
 
