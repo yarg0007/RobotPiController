@@ -212,8 +212,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
             videoView = findViewById(R.id.video_layout);
         }
         Uri video = Uri.parse(savedRtspUrlValue);
-
-        videoView.setVideoURI(video);
+        videoView.setVideoPath(savedRtspUrlValue);
+        //videoView.setVideoURI(video);
     }
 
     private void stopVideo() {
