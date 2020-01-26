@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -22,24 +26,24 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
-import org.videolan.libvlc.IVLCVout;
+import org.videolan.libvlc.IVideoPlayer;
 import org.videolan.libvlc.LibVLC;
+import org.videolan.libvlc.LibVlcException;
 import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
+public class MainActivity extends AppCompatActivity implements ControllerInputData, IVideoPlayer {
 
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
 
-    VLCVideoLayout videoView;
+
+    SurfaceView videoView;
+    SurfaceHolder videoViewHolder;
 
     LibVLC mLibVLC = null;
-    MediaPlayer mMediaPlayer = null;
 
     Button configButton;
     ToggleButton connectButton;
@@ -70,12 +74,19 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         setContentView(R.layout.activity_main);
 
-        final ArrayList<String> args = new ArrayList<>();
-        args.add("-vvv");
-        mLibVLC = new LibVLC(this, args);
-        mMediaPlayer = new MediaPlayer(mLibVLC);
+        try {
+            mLibVLC = new LibVLC();
+            mLibVLC.setAout(mLibVLC.AOUT_AUDIOTRACK);
+            mLibVLC.setVout(mLibVLC.VOUT_ANDROID_SURFACE);
+            mLibVLC.setHardwareAcceleration(LibVLC.HW_ACCELERATION_FULL);
 
-        videoView = findViewById(R.id.video_layout);
+            mLibVLC.init(getApplicationContext());
+        } catch (LibVlcException e){
+            Log.e("APP", e.toString());
+        }
+
+        videoView = (SurfaceView) findViewById(R.id.video_layout);
+        videoViewHolder = videoView.getHolder();
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
@@ -202,8 +213,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     protected void onDestroy() {
         super.onDestroy();
         stopVideo();
-        mMediaPlayer.release();
-        mLibVLC.release();
     }
 
     @Override
@@ -218,22 +227,17 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         if (videoView == null) {
             videoView = findViewById(R.id.video_layout);
         }
-        Uri video = Uri.parse(savedRtspUrlValue);
 
-        mMediaPlayer.attachViews(videoView, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
+        Surface surface = videoViewHolder.getSurface();
 
-        final Media media = new Media(mLibVLC, video);
-        mMediaPlayer.setMedia(media);
-        media.release();
-
-        mMediaPlayer.play();
+        mLibVLC.attachSurface(surface, MainActivity.this);
+        mLibVLC.playMRL(savedRtspUrlValue);
     }
 
     private void stopVideo() {
 
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.detachViews();
+        if (mLibVLC != null) {
+            mLibVLC.stop();
         }
     }
 
@@ -308,12 +312,18 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     @Override
-    public void onSurfacesCreated(IVLCVout vlcVout) {
-
+    public void setSurfaceLayout(int width, int height, int visible_width, int visible_height, int sar_num, int sar_den) {
+        ;
     }
 
     @Override
-    public void onSurfacesDestroyed(IVLCVout vlcVout) {
+    public int configureSurface(Surface surface, int width, int height, int hal) {
+        return -1;
+    }
 
+    @Override
+    public void eventHardwareAccelerationError() {
+        Log.e("APP", "eventHardwareAccelerationError()!");
+        return;
     }
 }
