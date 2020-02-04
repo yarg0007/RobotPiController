@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
@@ -23,12 +24,7 @@ import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
@@ -36,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
 
-    VideoView videoView;
+    WebView webVideoView;
 
     Button configButton;
     ToggleButton connectButton;
@@ -70,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         final ArrayList<String> args = new ArrayList<>();
         args.add("-vvv");
 
-        videoView = findViewById(R.id.video_layout);
+        webVideoView = findViewById(R.id.video_layout);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
@@ -208,18 +204,18 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     private void startVideo() {
-        if (videoView == null) {
-            videoView = findViewById(R.id.video_layout);
+
+        if (webVideoView == null) {
+            webVideoView = findViewById(R.id.video_layout);
         }
-        Uri video = Uri.parse(savedRtspUrlValue);
-        videoView.setVideoPath(savedRtspUrlValue);
-        //videoView.setVideoURI(video);
+
+        webVideoView.loadUrl(savedRtspUrlValue);
     }
 
     private void stopVideo() {
 
-        if (videoView != null) {
-            videoView.stopPlayback();
+        if (webVideoView != null) {
+            webVideoView.loadUrl("about:blank");
         }
     }
 
