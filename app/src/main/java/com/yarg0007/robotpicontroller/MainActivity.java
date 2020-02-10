@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
@@ -15,8 +14,8 @@ import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.ToggleButton;
-import android.widget.VideoView;
 
+import com.yarg0007.robotpicontroller.audio.AudioStreamClient;
 import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
@@ -25,7 +24,7 @@ import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 import org.videolan.libvlc.IVLCVout;
 
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
 
@@ -47,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     SshManager sshManager;
     ControllerInputThread controllerInputThread;
+    AudioStreamClient audioStreamClient;
 
     String savedRtspUrlValue;
     String savedRobotHost;
@@ -62,9 +62,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-
-        final ArrayList<String> args = new ArrayList<>();
-        args.add("-vvv");
 
         webVideoView = findViewById(R.id.video_layout);
 
@@ -138,10 +135,15 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                             return;
                         }
 
-                        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
-                        // TODO: set audio controls?
-                        controllerInputThread.startControllerInputThread();
+                        try {
+                            startAudio();
+                        } catch (UnknownHostException e) {
+                            alert.setMessage(String.format("The host %s cannot be resolved. Try the ip address?", savedRobotHost));
+                            alert.show();
+                            return;
+                        }
 
+                        startController();
                         startVideo();
 
                         connected = true;
@@ -149,12 +151,12 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                 } else { // Disconnect
                     connected = false;
-                    // TODO: add a shutdown operation somewhere for ssh commands
-                    if (controllerInputThread != null) {
-                        controllerInputThread.stopControllerInputThread();
-                    }
 
+                    stopAudio();
+                    stopController();
                     stopVideo();
+
+                    // TODO: add a shutdown operation somewhere for ssh commands
                 }
             }
         });
@@ -179,6 +181,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         super.onResume();
         getConfigurationValues();
         if (connected) {
+
+            try {
+                startAudio();
+            } catch (UnknownHostException e) {
+                return;
+            }
+            startController();
             startVideo();
         }
     }
@@ -186,13 +195,18 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     @Override
     protected void onPause() {
         super.onPause();
+        stopController();
+        stopAudio();
         stopVideo();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopController();
+        stopAudio();
         stopVideo();
+        // ToSO: stop all
     }
 
     @Override
@@ -200,6 +214,29 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         super.onWindowFocusChanged(hasWindowFocus);
         if (hasWindowFocus) {
             hideSystemUI();
+        }
+    }
+
+    private void startAudio() throws UnknownHostException {
+        audioStreamClient = new AudioStreamClient(savedRobotHost, Integer.parseInt(savedRobotport));
+        audioStreamClient.startConnection();
+    }
+
+    private void stopAudio() {
+        if (audioStreamClient != null) {
+            audioStreamClient.stopConnection();
+        }
+    }
+
+    private void startController() {
+        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
+        controllerInputThread.setAudioControls(audioStreamClient);
+        controllerInputThread.startControllerInputThread();
+    }
+
+    private void stopController() {
+        if (controllerInputThread != null) {
+            controllerInputThread.stopControllerInputThread();
         }
     }
 
@@ -285,8 +322,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public String getSelectedAudioFilePath() {
-        String selectedFileName = audioSpinner.getSelectedItem().toString();
-        return selectedFileName;
+        return audioSpinner.getSelectedItem().toString();
     }
 
     @Override

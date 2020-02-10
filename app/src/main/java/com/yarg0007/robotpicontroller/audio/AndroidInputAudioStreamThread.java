@@ -1,84 +1,61 @@
 package com.yarg0007.robotpicontroller.audio;
 
+import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
+import android.media.AudioTrack;
+import android.util.Log;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
 
+/**
+ * Handle the audio input from the robot and play it through speakers.
+ *
+ * Android AudioTrack example: https://github.com/DeanThomson/android-udp-audio-chat/blob/master/src/hw/dt83/udpchat/AudioCall.java
+ */
 public class AndroidInputAudioStreamThread extends Thread {
 
+    private static final String LOG_TAG = "SPEAKER";
+
+    /*
+
+    Audio Format settings from the previous client software.
+    Robot will be using the same audio format settings.
+    Copied here for reference.
+
+    float sampleRate = 44100.0f;
+    int sampleSizeInBits = 16;
+    int channels = 1;
+    boolean signed = true;
+    boolean bigEndian = true;
+
+    int frameSizeInBytes = getAudioFormat().getFrameSize();
+    int bufferLengthInFrames = sourceDataLine.getBufferSize() / 8;
+    int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
+    return bufferLengthInBytes;
+
+     */
+
+    private static final int SAMPLE_RATE = 44100; // Hertz
+    private static final int SAMPLE_INTERVAL = 20; // Milliseconds
+    private static final int SAMPLE_SIZE = 2; // Bytes
+    private static final int BUF_SIZE = SAMPLE_INTERVAL * SAMPLE_INTERVAL * SAMPLE_SIZE * 2; //Bytes
 
     private int serverPort;
-
-    /** The connected client. Setup to only allow a single client connection.*/
-    private DatagramSocket serverDatagramSocket = null;
 
     /** Flag execution state of thread. */
     private boolean running;
 
-    /** Plays audio to the speakers. */
-    private SourceDataLine sourceDataLine;
-
-    /**
-     * Default constructor.
-     */
-    public SourceDataLineThread(int serverPort) {
+    AndroidInputAudioStreamThread(int serverPort) {
         this.serverPort = serverPort;
-        initialize();
-    }
-
-    /**
-     * Initialize the instance. Setup Datagram server and then do all remaining
-     * the setup magic. Must be called after getting class instance.
-     */
-    public void initialize() {
-
-        if (running) {
-            running = false;
-            this.interrupt();
-
-            // Let the thread terminate and then proceed.
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
-        }
-
-        if (serverDatagramSocket != null) {
-            serverDatagramSocket.close();
-        }
-
-        try {
-            serverDatagramSocket = new DatagramSocket(serverPort);
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        if (sourceDataLine == null) {
-
-            DataLine.Info dataLineInfo =
-                    new DataLine.Info(SourceDataLine.class, getAudioFormat());
-
-            try {
-                sourceDataLine =
-                        (SourceDataLine) AudioSystem.getLine(dataLineInfo);
-                sourceDataLine.open(getAudioFormat());
-            } catch (LineUnavailableException e1) {
-                e1.printStackTrace();
-                System.out.println("Source data line unable to open. Bailing");
-                stopAudioStreamSpeakers();
-                return;
-            }
-
-            sourceDataLine.start();
-        }
     }
 
     /**
      * Start the speaker thread after opening connections.
      */
-    public void startAudioStreamSpeakers() {
+    void startAudioStreamSpeakers() {
 
         running = true;
         this.start();
@@ -87,107 +64,50 @@ public class AndroidInputAudioStreamThread extends Thread {
     /**
      * Stop the speaker thread, close connections etc.
      */
-    public void stopAudioStreamSpeakers() {
+    void stopAudioStreamSpeakers() {
 
         running = false;
         this.interrupt();
-
-        sourceDataLine.flush();
-        sourceDataLine.close();
-        sourceDataLine = null;
-
-        serverDatagramSocket.close();
-        serverDatagramSocket = null;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Thread#run()
-     */
+    @Override
     public void run() {
 
-        // TODO: https://github.com/DeanThomson/android-udp-audio-chat/blob/master/src/hw/dt83/udpchat/AudioCall.java
+        AudioTrack   track = new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                BUF_SIZE,
+                AudioTrack.MODE_STREAM);
 
-        String url = "http://........"; // your URL here
-        MediaPlayer mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM.STREAM_MUSIC);
+        track.play();
+
         try {
-            mediaPlayer.setDataSource(url);
-        } catch (IOException e) {
+            // Define a socket to receive the audio
+            DatagramSocket socket = new DatagramSocket(serverPort);
+            byte[] buf = new byte[BUF_SIZE];
 
-        }
-        mediaPlayer.prepare(); // might take long! (for buffering, etc)
-        mediaPlayer.start();
-
-
-
-        int dataLen = getAudioBufferSizeBytes();
-        byte[] datagramBuffer = new byte[dataLen];
-        DatagramPacket datagramPacket = new DatagramPacket(datagramBuffer, dataLen);
-
-        while (running) {
-
-            try {
-                serverDatagramSocket.receive(datagramPacket);
-            } catch (IOException e) {
-
-                System.out.println("Exception on incoming audio stream. Pausing before continuing.");
-                e.printStackTrace();
-
-                // Let the system rest and then loop back to try the
-                // next incoming data bit.
-                try {
-                    sleep(500);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-                continue;
+            while(running) {
+                // Play back the audio received from packets
+                DatagramPacket packet = new DatagramPacket(buf, BUF_SIZE);
+                socket.receive(packet);
+                Log.i("SPEAKER", "Packet received: " + packet.getLength());
+                track.write(packet.getData(), 0, BUF_SIZE);
             }
 
-            sourceDataLine.write(
-                    datagramPacket.getData(),
-                    0,
-                    datagramPacket.getLength());
+            // Stop playing back and release resources
+            socket.disconnect();
+            socket.close();
+            track.stop();
+            track.flush();
+            track.release();
         }
-
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
+        catch(SocketException e) {
+            Log.e(LOG_TAG, "SocketException: " + e.toString());
+        }
+        catch(IOException e) {
+            Log.e(LOG_TAG, "IOException: " + e.toString());
         }
     }
-
-    // -------------------------------------------------------------------------
-    // Private methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Get the audio format.
-     * @return Audio format to use for recording.
-     */
-    private AudioFormat getAudioFormat() {
-
-        float sampleRate = 44100.0f;
-        int sampleSizeInBits = 16;
-        int channels = 1;
-        boolean signed = true;
-        boolean bigEndian = true;
-
-        return new AudioFormat(
-                sampleRate,
-                sampleSizeInBits,
-                channels,
-                signed,
-                bigEndian);
-    }
-
-    /**
-     * Size of the playback buffer in bytes.
-     * @return Size of buffer
-     */
-    private int getAudioBufferSizeBytes() {
-
-        int frameSizeInBytes = getAudioFormat().getFrameSize();
-        int bufferLengthInFrames = sourceDataLine.getBufferSize() / 8;
-        int bufferLengthInBytes = bufferLengthInFrames * frameSizeInBytes;
-        return bufferLengthInBytes;
-    }
-
 }

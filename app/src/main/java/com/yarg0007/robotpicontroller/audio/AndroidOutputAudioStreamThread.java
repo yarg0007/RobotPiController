@@ -33,38 +33,38 @@ public class AndroidOutputAudioStreamThread extends Thread {
     private int port; //49809 (original port for sending audio) or 50005;
     private final InetAddress host;
 
-    public AndroidOutputAudioStreamThread(String host, int port) throws UnknownHostException {
+    AndroidOutputAudioStreamThread(String host, int port) throws UnknownHostException {
         this.host = InetAddress.getByName(host);
         this.port = port;
     }
 
-    public void startConnection() {
+    void startConnection() {
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat,minBufSize*10);
         running = true;
         this.start();
     }
 
-    public void stopConnection() {
+    void stopConnection() {
         running = false;
     }
 
-    public void playAudioFile(String audioFilePath) {
+    void playAudioFile(String audioFilePath) {
         stopMicrophone();
         this.audioFileToSend = audioFilePath;
         sendAudioFile = true;
     }
 
-    public void playMicrophone() {
+    void playMicrophone() {
         stopAudioFile();
         recorder.startRecording();
         sendMicAudio = true;
     }
 
-    public void stopAudioFile() {
+    void stopAudioFile() {
         sendAudioFile = false;
     }
 
-    public void stopMicrophone() {
+    void stopMicrophone() {
         sendMicAudio = false;
         recorder.stop();
     }
