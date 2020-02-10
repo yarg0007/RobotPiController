@@ -17,9 +17,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        maven {
-            url "https://dl.bintray.com/videolan/Android"
-        }
         jcenter()
         
     }

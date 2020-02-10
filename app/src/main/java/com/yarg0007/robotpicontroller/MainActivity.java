@@ -22,11 +22,9 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
-import org.videolan.libvlc.IVLCVout;
-
 import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
+public class MainActivity extends AppCompatActivity implements ControllerInputData {
 
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
@@ -323,15 +321,5 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     @Override
     public String getSelectedAudioFilePath() {
         return audioSpinner.getSelectedItem().toString();
-    }
-
-    @Override
-    public void onSurfacesCreated(IVLCVout vlcVout) {
-
-    }
-
-    @Override
-    public void onSurfacesDestroyed(IVLCVout vlcVout) {
-
     }
 }
