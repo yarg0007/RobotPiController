@@ -22,6 +22,7 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData {
@@ -46,9 +47,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     ControllerInputThread controllerInputThread;
     AudioStreamClient audioStreamClient;
 
-    String savedRtspUrlValue;
-    String savedRobotHost;
-    String savedRobotport;
+    String savedVideoUrlValue;
+    String savedRobotAudioport;
     String savedSshHostValue;
     String savedSshPortValue;
     String savedSshUsernameValue;
@@ -100,13 +100,10 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     });
                     AlertDialog alert = alertBuilder.create();
 
-                    if (savedRtspUrlValue == null || savedRtspUrlValue.isEmpty()) {
+                    if (savedVideoUrlValue == null || savedVideoUrlValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
                         alert.show();
-                    } else if (savedRobotHost == null || savedRobotHost.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_host));
-                        alert.show();
-                    } else if (savedRobotport == null || savedRobotport.isEmpty()) {
+                    } else if (savedRobotAudioport == null || savedRobotAudioport.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_port));
                         alert.show();
                     } else if (savedSshHostValue == null || savedSshHostValue.isEmpty()) {
@@ -124,7 +121,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     } else {
 
                         if (sshManager == null) {
-                            sshManager = new SshManager();
+                            try {
+                                sshManager = new SshManager(savedSshHostValue, savedSshUsernameValue, savedSshPasswordValue);
+                            } catch (IOException e) {
+                                alert.setMessage("Unable to establish SSH connection.");
+                                alert.show();
+                                return;
+                            }
                         }
 
                         if (!sshManager.startRobotServer()) {
@@ -136,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         try {
                             startAudio();
                         } catch (UnknownHostException e) {
-                            alert.setMessage(String.format("The host %s cannot be resolved. Try the ip address?", savedRobotHost));
+                            alert.setMessage(String.format("The host %s cannot be resolved. Try the ip address?", savedSshHostValue));
                             alert.show();
                             return;
                         }
@@ -216,7 +219,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     private void startAudio() throws UnknownHostException {
-        audioStreamClient = new AudioStreamClient(savedRobotHost, Integer.parseInt(savedRobotport));
+        audioStreamClient = new AudioStreamClient(savedSshHostValue, Integer.parseInt(savedRobotAudioport));
         audioStreamClient.startConnection();
     }
 
@@ -227,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     private void startController() {
-        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
+        controllerInputThread = new ControllerInputThread(MainActivity.this, savedSshHostValue, Integer.valueOf(savedRobotAudioport));
         controllerInputThread.setAudioControls(audioStreamClient);
         controllerInputThread.startControllerInputThread();
     }
@@ -244,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
             webVideoView = findViewById(R.id.video_layout);
         }
 
-        webVideoView.loadUrl(savedRtspUrlValue);
+        webVideoView.loadUrl(savedVideoUrlValue);
     }
 
     private void stopVideo() {
@@ -257,9 +260,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     private void getConfigurationValues() {
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
-        savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
-        savedRobotHost = sharedPreferences.getString(SettingKeys.robotHost, null);
-        savedRobotport = sharedPreferences.getString(SettingKeys.robotPort, null);
+        savedVideoUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, null);
+        savedRobotAudioport = sharedPreferences.getString(SettingKeys.robotAudioPort, null);
         savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
         savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
         savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
