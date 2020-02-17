@@ -10,19 +10,17 @@
     <string name="toggle_connect_on">Disconnect</string>
     <string name="toggle_connect_off">Connect</string>
 
-    <string name="video_stream_url_label">RTSP URL</string>
-    <string name="video_stream_input">rtsp://</string>
+    <string name="video_stream_url_label">Video StreamL</string>
+    <string name="video_stream_input">http://robotpi.local:8080?action=stream</string>
 
-    <string name="ssh_host_name_label">ssh host/ip</string>
-    <string name="ssh_host_name_hint">ssh host/ip (likely same as robot host/ip)</string>
+    <string name="ssh_host_name_label">server host/ip</string>
+    <string name="ssh_host_name_hint">robotpi.local</string>
     <string name="ssh_host_port_label">ssh port</string>
     <string name="ssh_host_port_input">22</string>
     <string name="ssh_password_label">ssh password</string>
     <string name="ssh_userame_label">ssh username</string>
 
-    <string name="server_host_label">Robot host/ip</string>
-    <string name="server_host_hint">robotpi.local</string>
-    <string name="server_port_label">Robot port</string>
+    <string name="server_port_label">Robot audio port</string>
     <string name="server_port_hint">49801</string>
 
     <string name="save_button">Save</string>

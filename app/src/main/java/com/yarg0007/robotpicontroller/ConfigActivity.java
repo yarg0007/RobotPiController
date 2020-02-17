@@ -14,9 +14,8 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 
 public class ConfigActivity extends Activity {
 
-    EditText rtspUrl;
-    EditText robotHost;
-    EditText robotPort;
+    EditText videoUrl;
+    EditText robotAudioPort;
     EditText sshHost;
     EditText sshPort;
     EditText sshUsername;
@@ -28,9 +27,8 @@ public class ConfigActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
 
-        rtspUrl = findViewById(R.id.video_stream_input);
-        robotHost = findViewById(R.id.robot_server_host_input);
-        robotPort = findViewById(R.id.robot_server_port_input);
+        videoUrl = findViewById(R.id.video_stream_input);
+        robotAudioPort = findViewById(R.id.robot_server_port_input);
         sshHost = findViewById(R.id.ssh_host_field);
         sshPort = findViewById(R.id.ssh_port_field);
         sshUsername = findViewById(R.id.ssh_username_field);
@@ -38,17 +36,15 @@ public class ConfigActivity extends Activity {
         saveButton = findViewById(R.id.save_button);
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
-        String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, getResources().getString(R.string.video_stream_input));
-        String savedRobotHostValue = sharedPreferences.getString(SettingKeys.robotHost, "");
-        String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotPort, "");
+        String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, getResources().getString(R.string.video_stream_input));
+        String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotAudioPort, "");
         String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, getResources().getString(R.string.ssh_host_name_label));
         String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, getResources().getString(R.string.ssh_host_port_input));
         String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, getResources().getString(R.string.ssh_userame_label));
         String savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, "");
 
-        rtspUrl.setText(savedRtspUrlValue);
-        robotHost.setText(savedRobotHostValue);
-        robotPort.setText(savedRobotPortValue);
+        videoUrl.setText(savedRtspUrlValue);
+        robotAudioPort.setText(savedRobotPortValue);
         sshHost.setText(savedSshHostValue);
         sshPort.setText(savedSshPortValue);
         sshUsername.setText(savedSshUsernameValue);
@@ -59,17 +55,15 @@ public class ConfigActivity extends Activity {
             public void onClick(View v) {
                 SharedPreferences.Editor sharedPreferencesEditor = sharedPreferences.edit();
 
-                String rtspValue = rtspUrl.getText().toString();
-                String robotHostValue = robotHost.getText().toString();
-                String robotPortValue = robotPort.getText().toString();
+                String rtspValue = videoUrl.getText().toString();
+                String robotPortValue = robotAudioPort.getText().toString();
                 String sshHostValue = sshHost.getText().toString();
                 String sshPortValue = sshPort.getText().toString();
                 String sshUsernameValue = sshUsername.getText().toString();
                 String sshPasswordValue = sshPassword.getText().toString();
 
-                sharedPreferencesEditor.putString(SettingKeys.rtspUrl, rtspValue);
-                sharedPreferencesEditor.putString(SettingKeys.robotHost, robotHostValue);
-                sharedPreferencesEditor.putString(SettingKeys.robotPort, robotPortValue);
+                sharedPreferencesEditor.putString(SettingKeys.videoUrl, rtspValue);
+                sharedPreferencesEditor.putString(SettingKeys.robotAudioPort, robotPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshHost, sshHostValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshPort, sshPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshUsername, sshUsernameValue);

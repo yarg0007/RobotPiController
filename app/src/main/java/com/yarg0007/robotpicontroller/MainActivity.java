@@ -6,40 +6,31 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.ToggleButton;
-import android.widget.VideoView;
 
+import com.yarg0007.robotpicontroller.audio.AudioStreamClient;
 import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
-import org.videolan.libvlc.IVLCVout;
-import org.videolan.libvlc.LibVLC;
-import org.videolan.libvlc.Media;
-import org.videolan.libvlc.MediaPlayer;
-import org.videolan.libvlc.util.VLCVideoLayout;
-
 import java.io.IOException;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData, IVLCVout.Callback {
+public class MainActivity extends AppCompatActivity implements ControllerInputData {
 
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
 
-    VLCVideoLayout videoView;
-
-    LibVLC mLibVLC = null;
-    MediaPlayer mMediaPlayer = null;
+    WebView webVideoView;
 
     Button configButton;
     ToggleButton connectButton;
@@ -54,10 +45,10 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     SshManager sshManager;
     ControllerInputThread controllerInputThread;
+    AudioStreamClient audioStreamClient;
 
-    String savedRtspUrlValue;
-    String savedRobotHost;
-    String savedRobotport;
+    String savedVideoUrlValue;
+    String savedRobotAudioport;
     String savedSshHostValue;
     String savedSshPortValue;
     String savedSshUsernameValue;
@@ -70,12 +61,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         setContentView(R.layout.activity_main);
 
-        final ArrayList<String> args = new ArrayList<>();
-        args.add("-vvv");
-        mLibVLC = new LibVLC(this, args);
-        mMediaPlayer = new MediaPlayer(mLibVLC);
-
-        videoView = findViewById(R.id.video_layout);
+        webVideoView = findViewById(R.id.video_layout);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
@@ -114,13 +100,10 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     });
                     AlertDialog alert = alertBuilder.create();
 
-                    if (savedRtspUrlValue == null || savedRtspUrlValue.isEmpty()) {
+                    if (savedVideoUrlValue == null || savedVideoUrlValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
                         alert.show();
-                    } else if (savedRobotHost == null || savedRobotHost.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_host));
-                        alert.show();
-                    } else if (savedRobotport == null || savedRobotport.isEmpty()) {
+                    } else if (savedRobotAudioport == null || savedRobotAudioport.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_port));
                         alert.show();
                     } else if (savedSshHostValue == null || savedSshHostValue.isEmpty()) {
@@ -138,7 +121,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     } else {
 
                         if (sshManager == null) {
-                            sshManager = new SshManager();
+                            try {
+                                sshManager = new SshManager(savedSshHostValue, savedSshUsernameValue, savedSshPasswordValue);
+                            } catch (IOException e) {
+                                alert.setMessage("Unable to establish SSH connection.");
+                                alert.show();
+                                return;
+                            }
                         }
 
                         if (!sshManager.startRobotServer()) {
@@ -147,10 +136,15 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                             return;
                         }
 
-                        controllerInputThread = new ControllerInputThread(MainActivity.this, savedRobotHost, Integer.valueOf(savedRobotport));
-                        // TODO: set audio controls?
-                        controllerInputThread.startControllerInputThread();
+                        try {
+                            startAudio();
+                        } catch (UnknownHostException e) {
+                            alert.setMessage(String.format("The host %s cannot be resolved. Try the ip address?", savedSshHostValue));
+                            alert.show();
+                            return;
+                        }
 
+                        startController();
                         startVideo();
 
                         connected = true;
@@ -158,12 +152,12 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                 } else { // Disconnect
                     connected = false;
-                    // TODO: add a shutdown operation somewhere for ssh commands
-                    if (controllerInputThread != null) {
-                        controllerInputThread.stopControllerInputThread();
-                    }
 
+                    stopAudio();
+                    stopController();
                     stopVideo();
+
+                    // TODO: add a shutdown operation somewhere for ssh commands
                 }
             }
         });
@@ -188,6 +182,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         super.onResume();
         getConfigurationValues();
         if (connected) {
+
+            try {
+                startAudio();
+            } catch (UnknownHostException e) {
+                return;
+            }
+            startController();
             startVideo();
         }
     }
@@ -195,15 +196,18 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     @Override
     protected void onPause() {
         super.onPause();
+        stopController();
+        stopAudio();
         stopVideo();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        stopController();
+        stopAudio();
         stopVideo();
-        mMediaPlayer.release();
-        mLibVLC.release();
+        // ToSO: stop all
     }
 
     @Override
@@ -214,35 +218,50 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         }
     }
 
-    private void startVideo() {
-        if (videoView == null) {
-            videoView = findViewById(R.id.video_layout);
+    private void startAudio() throws UnknownHostException {
+        audioStreamClient = new AudioStreamClient(savedSshHostValue, Integer.parseInt(savedRobotAudioport));
+        audioStreamClient.startConnection();
+    }
+
+    private void stopAudio() {
+        if (audioStreamClient != null) {
+            audioStreamClient.stopConnection();
         }
-        Uri video = Uri.parse(savedRtspUrlValue);
+    }
 
-        mMediaPlayer.attachViews(videoView, null, ENABLE_SUBTITLES, USE_TEXTURE_VIEW);
+    private void startController() {
+        controllerInputThread = new ControllerInputThread(MainActivity.this, savedSshHostValue, Integer.valueOf(savedRobotAudioport));
+        controllerInputThread.setAudioControls(audioStreamClient);
+        controllerInputThread.startControllerInputThread();
+    }
 
-        final Media media = new Media(mLibVLC, video);
-        mMediaPlayer.setMedia(media);
-        media.release();
+    private void stopController() {
+        if (controllerInputThread != null) {
+            controllerInputThread.stopControllerInputThread();
+        }
+    }
 
-        mMediaPlayer.play();
+    private void startVideo() {
+
+        if (webVideoView == null) {
+            webVideoView = findViewById(R.id.video_layout);
+        }
+
+        webVideoView.loadUrl(savedVideoUrlValue);
     }
 
     private void stopVideo() {
 
-        if (mMediaPlayer != null) {
-            mMediaPlayer.stop();
-            mMediaPlayer.detachViews();
+        if (webVideoView != null) {
+            webVideoView.loadUrl("about:blank");
         }
     }
 
     private void getConfigurationValues() {
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
-        savedRtspUrlValue = sharedPreferences.getString(SettingKeys.rtspUrl, null);
-        savedRobotHost = sharedPreferences.getString(SettingKeys.robotHost, null);
-        savedRobotport = sharedPreferences.getString(SettingKeys.robotPort, null);
+        savedVideoUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, null);
+        savedRobotAudioport = sharedPreferences.getString(SettingKeys.robotAudioPort, null);
         savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
         savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
         savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
@@ -303,17 +322,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public String getSelectedAudioFilePath() {
-        String selectedFileName = audioSpinner.getSelectedItem().toString();
-        return selectedFileName;
-    }
-
-    @Override
-    public void onSurfacesCreated(IVLCVout vlcVout) {
-
-    }
-
-    @Override
-    public void onSurfacesDestroyed(IVLCVout vlcVout) {
-
+        return audioSpinner.getSelectedItem().toString();
     }
 }
