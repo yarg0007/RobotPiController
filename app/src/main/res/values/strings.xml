@@ -36,6 +36,12 @@
     <string name="connect_alert_button">Done</string>
 
     <string name="robot_server_start_failure">The SSH commands to start the robot server failed.</string>
+    <string name="video_server_start_failure">The SSH commands to start the mjpeg video stream failed.</string>
+    <string name="robot_server_stop_failure">The SSH commands to stop the robot server failed.</string>
+    <string name="video_server_stop_failure">The SSH commands to stop the mjpeg video stream failed.</string>
+
+    <string name="ssh_connection_failure">The SSH connection failed.</string>
+    <string name="ssh_connection_timeout">The SSH connection timed out waiting for connection.</string>
 
     <string-array name="audio_files">
         <item>fart.wav</item>

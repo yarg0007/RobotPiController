@@ -62,8 +62,6 @@ public class SshManager extends Thread {
      * Open the SSH connection thread.
      */
     public void openSshConnection() {
-
-        running = true;
         this.start();
     }
 
@@ -95,6 +93,14 @@ public class SshManager extends Thread {
         }
     }
 
+    /**
+     * Check if the SshManager thread is running.
+     * @return True if running, false otherwise.
+     */
+    public boolean isRunning() {
+        return running;
+    }
+
     @Override
     public void run() {
 
@@ -107,6 +113,7 @@ public class SshManager extends Thread {
             ssh.getConnection().getKeepAlive().setKeepAliveInterval(5);
             ssh.authPassword(sshUsername, sshPassword);
             session = ssh.startSession();
+            running = true;
         } catch (IOException e) {
             running = false;
             Log.e(TAG, "Error creating ssh connection. " + e.getMessage());

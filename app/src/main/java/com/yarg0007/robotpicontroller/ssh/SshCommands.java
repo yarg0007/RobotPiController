@@ -7,18 +7,34 @@ import java.util.List;
 
 public class SshCommands {
 
-
+    // Start video
+    public static final String startVideoStreamId = "StartVideoStream";
 
     public static final List<String> startVideoStreamCommands = Arrays.asList(
             "cd ~/mpjg-streamer-master/mjpg-streamer-experimental",
             "export LD_LIBRARY_PATH=.",
             "./mjpg_streamer -o \"output_http.so -w ./www\" -i \"input_raspicam.so\"");
 
-    public static final List<String> shutdownRaspberryPi = Arrays.asList("sudo shutdown -h now");
+    // Stop video
+    // TODO
+    public static final String stopVideoStreamId = "StopVideoStream";
 
+    public static final List<String> stopVideoStreamCommands = Arrays.asList("");
 
+    // Start server executable
+    // TODO
+    public static final String startServerId = "StartServer";
 
-    // TODO: launch whatever needs to be launched, including the video stream and server app
-    // TODO: close out the server and stop the video stream
-    // TODO: shutdown the raspberry pi
+    public static final List<String> startServerCommands = Arrays.asList("");
+
+    // Stop server executable
+    // TODO
+    public static final String stopServerId = "StopServer";
+
+    public static final List<String> stopServerCommands = Arrays.asList("");
+
+    // Shutdown raspberry pi
+    public static final String shutdownRaspberryPiId = "ShutdownRaspberryPi";
+
+    public static final List<String> shutdownRaspberryPiCommands = Arrays.asList("sudo shutdown -h now");
 }
