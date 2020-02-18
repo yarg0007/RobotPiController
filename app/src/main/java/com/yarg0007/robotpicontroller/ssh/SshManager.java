@@ -58,11 +58,19 @@ public class SshManager extends Thread {
         observers.remove(observer);
     }
 
+    /**
+     * Open the SSH connection thread.
+     */
     public void openSshConnection() {
 
+        running = true;
         this.start();
     }
 
+    /**
+     * Close down the SSH connection thread and stop all command execution.
+     * @throws IOException
+     */
     public void closeSshConnection() throws IOException {
 
         running = false;
@@ -75,9 +83,14 @@ public class SshManager extends Thread {
         }
     }
 
-    private void executeCommands(SshCommandCompletionPayload payload) throws IOException {
-
-        synchronized (payloads) {
+    /**
+     * Queue the specified payload for execution.
+     * @param payload Payload containing the SSH commands to execute.
+     */
+    public void queuePayload(SshCommandCompletionPayload payload) {
+        if (!running) {
+            throw new IllegalStateException("Cannot add payload for execution until thread has been started.");
+        } else {
             payloads.add(payload);
         }
     }
@@ -124,6 +137,12 @@ public class SshManager extends Thread {
             List<String> commands = payload.getCommands();
 
             for (String command : commands) {
+
+                // Facilitate early exit.
+                if (!running) {
+                    break;
+                }
+
                 try {
                     final Session.Command cmd = session.exec("ping -c 1 google.com");
                     Log.d(TAG, String.format("Executing SSH command: %s", command));
@@ -136,7 +155,9 @@ public class SshManager extends Thread {
                 }
             }
 
-            notifyObserversOfCompletion(payload);
+            if (!running) {
+                notifyObserversOfCompletion(payload);
+            }
         }
     }
 
