@@ -3,6 +3,7 @@ package com.yarg0007.robotpicontroller.ssh;
 import android.util.Log;
 
 import net.schmizz.keepalive.KeepAliveProvider;
+import net.schmizz.sshj.AndroidConfig;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
@@ -10,8 +11,15 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.sf.expectit.Expect;
+import net.sf.expectit.ExpectBuilder;
+import net.sf.expectit.matcher.Matcher;
+import net.sf.expectit.matcher.Matchers;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.io.IOException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -104,15 +112,18 @@ public class SshManager extends Thread {
     @Override
     public void run() {
 
-        DefaultConfig defaultConfig = new DefaultConfig();
-        defaultConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
-        ssh = new SSHClient(defaultConfig);
+        AndroidConfig androidConfig = new AndroidConfig();
+        androidConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
+        ssh = new SSHClient(androidConfig);
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
+
+        Security.removeProvider("BC");
+        Security.insertProviderAt(new BouncyCastleProvider(), Security.getProviders().length + 1);
+
         try {
             ssh.connect(sshHost);
             ssh.getConnection().getKeepAlive().setKeepAliveInterval(5);
             ssh.authPassword(sshUsername, sshPassword);
-            session = ssh.startSession();
             running = true;
         } catch (IOException e) {
             running = false;
@@ -143,6 +154,29 @@ public class SshManager extends Thread {
 
             List<String> commands = payload.getCommands();
 
+            Expect expect = null;
+
+            try {
+                session = ssh.startSession();
+                session.allocateDefaultPTY();
+                Session.Shell shell = session.startShell();
+                expect = new ExpectBuilder()
+                        .withOutput(shell.getOutputStream())
+                        .withInputs(shell.getInputStream(), shell.getErrorStream())
+                        .build();
+            } catch (IOException e) {
+                Log.e(TAG, String.format("Error creating interactive shell. Exception: %s", e.getMessage()));
+                continue;
+            }
+
+            try {
+                expect.expect(Matchers.contains("$"));
+            } catch (IOException e) {
+                Log.e(TAG, "SSH prompt is not ready for input. $ now found.");
+                continue;
+            }
+
+
             for (String command : commands) {
 
                 // Facilitate early exit.
@@ -151,7 +185,11 @@ public class SshManager extends Thread {
                 }
 
                 try {
-                    final Session.Command cmd = session.exec("ping -c 1 google.com");
+                    expect.sendLine(command);
+                    expect.expect(Matcher.contains());
+
+
+                    Session.Command cmd = session.exec(command);
                     Log.d(TAG, String.format("Executing SSH command: %s", command));
                     Log.d(TAG, String.format("Response: %s", IOUtils.readFully(cmd.getInputStream()).toString()));
                     cmd.join(5, TimeUnit.SECONDS);
