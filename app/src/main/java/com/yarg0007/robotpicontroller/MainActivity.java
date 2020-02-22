@@ -20,8 +20,8 @@ import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.ssh.SshCommandCompletionObserver;
-import com.yarg0007.robotpicontroller.ssh.SshCommandCompletionPayload;
-import com.yarg0007.robotpicontroller.ssh.SshCommands;
+import com.yarg0007.robotpicontroller.ssh.SshCommandPayload;
+import com.yarg0007.robotpicontroller.ssh.commands.SshServerCommands;
 import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
@@ -146,14 +146,14 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                                 if (countdown <= 0) {
                                     sshManager = null;
-                                    alert.setMessage(getResources().getString(R.string.ssh_connection_timeout));
+// TODO                                    alert.setMessage(getResources().getString(R.string.ssh_connection_timeout));
                                     alert.show();
                                     return;
                                 }
 
-                                sshManager.addObserver(MainActivity.this);
-                                sshManager.queuePayload(new SshCommandCompletionPayload(SshCommands.startVideoStreamId, SshCommands.startVideoStreamCommands));
-                            } catch (IOException e) {
+// TODO                                sshManager.addObserver(MainActivity.this);
+// TODO                                sshManager.queuePayload(new SshCommandPayload(SshServerCommands.startVideoStreamId, SshServerCommands.startVideoStreamCommands));
+                            } catch (Exception e) { // CORRECT THIS: WE MAY NOT NEED THIS EXCEPTION
                                 sshManager = null;
                                 alert.setMessage(getResources().getString(R.string.ssh_connection_failure));
                                 alert.show();
@@ -180,15 +180,15 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    sshManager.queuePayload(new SshCommandCompletionPayload(SshCommands.shutdownRaspberryPiId, SshCommands.shutdownRaspberryPiCommands));
-                                    break;
-
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    sshManager.queuePayload(new SshCommandCompletionPayload(SshCommands.stopServerId, SshCommands.stopServerCommands));
-                                    sshManager.queuePayload(new SshCommandCompletionPayload(SshCommands.stopVideoStreamId, SshCommands.stopVideoStreamCommands));
-                                    break;
-                            }
+//                                case DialogInterface.BUTTON_POSITIVE:
+//                                    sshManager.queuePayload(new SshCommandPayload(SshServerCommands.shutdownRaspberryPiId, SshServerCommands.shutdownRaspberryPiCommands));
+//                                    break;
+//
+//                                case DialogInterface.BUTTON_NEGATIVE:
+//                                    sshManager.queuePayload(new SshCommandPayload(SshServerCommands.stopServerId, SshServerCommands.stopServerCommands));
+//                                    sshManager.queuePayload(new SshCommandPayload(SshServerCommands.stopVideoStreamId, SshServerCommands.stopVideoStreamCommands));
+//                                    break;
+                           }
                         }
                     };
 
@@ -363,11 +363,11 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     @Override
-    public void commandsCompleted(SshCommandCompletionPayload payload) {
+    public void commandsCompleted(SshCommandPayload payload) {
 
-        if (payload.getId().equals(SshCommands.startVideoStreamId)) {
-            sshManager.queuePayload(new SshCommandCompletionPayload(SshCommands.startServerId, SshCommands.startServerCommands));
-        } else if (payload.getId().equals(SshCommands.startServerId)) {
+        if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
+// TODO            sshManager.queuePayload(new SshCommandPayload(SshServerCommands.startServerId, SshServerCommands.startServerCommands));
+        } else if (payload.getId().equals(SshServerCommands.startServerId)) {
 
             try {
                 startAudioConnection();
@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
             startControllerConnection();
             startVideoConnection();
-        } else if (payload.getId().equals(SshCommands.stopVideoStreamId)) {
+        } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
             try {
                 sshManager.closeSshConnection();
             } catch (IOException e) {
@@ -389,18 +389,18 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     @Override
-    public void commandsCompletedWithError(SshCommandCompletionPayload payload, String errorMessage) {
+    public void commandsCompletedWithError(SshCommandPayload payload, String errorMessage) {
 
-        if (payload.getId().equals(SshCommands.startVideoStreamId)) {
+        if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
             alert.setMessage(getResources().getString(R.string.video_server_start_failure));
             alert.show();
-        } else if (payload.getId().equals(SshCommands.startServerId)) {
+        } else if (payload.getId().equals(SshServerCommands.startServerId)) {
             alert.setMessage(getResources().getString(R.string.robot_server_start_failure));
             alert.show();
-        } else if (payload.getId().equals(SshCommands.stopServerId)) {
+        } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
             alert.setMessage(getResources().getString(R.string.robot_server_stop_failure));
             alert.show();
-        } else if (payload.getId().equals(SshCommands.stopVideoStreamId)) {
+        } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
             alert.setMessage(getResources().getString(R.string.video_server_stop_failure));
             alert.show();
         }

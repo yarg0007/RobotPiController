@@ -1,19 +1,15 @@
 package com.yarg0007.robotpicontroller.ssh;
 
-import android.util.Log;
+import com.yarg0007.robotpicontroller.log.Logger;
+import com.yarg0007.robotpicontroller.ssh.commands.CommandExpectPair;
 
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.AndroidConfig;
-import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.sf.expectit.Expect;
 import net.sf.expectit.ExpectBuilder;
-import net.sf.expectit.matcher.Matcher;
 import net.sf.expectit.matcher.Matchers;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -22,7 +18,6 @@ import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class SshManager extends Thread {
 
@@ -37,10 +32,30 @@ public class SshManager extends Thread {
     private final String sshUsername;
     private final String sshPassword;
 
-    private List<SshCommandCompletionObserver> observers;
-    private List<SshCommandCompletionPayload> payloads;
+    private final List<SshCommandCompletionObserver> observers;
+    private final List<SshCommandPayload> payloads;
 
-    public SshManager(String sshHost, String username, String password) throws IOException {
+    private final Logger logger;
+
+    /**
+     * Inject the ssh client and session - use for injection.
+     * @param sshHost SSH host server
+     * @param username SSH username
+     * @param password SSH password
+     */
+    public SshManager(String sshHost, String username, String password) {
+        this(sshHost, username, password, null, null, null);
+    }
+
+    /**
+     * Inject the ssh client and session - use for test injection.
+     * @param sshHost SSH host server
+     * @param username SSH username
+     * @param password SSH password
+     * @param ssh SSH Client instance
+     * @param session Session instance
+     */
+    protected SshManager(String sshHost, String username, String password, SSHClient ssh, Session session, Logger logger) {
 
         this.sshHost = sshHost;
         this.sshUsername = username;
@@ -48,6 +63,14 @@ public class SshManager extends Thread {
 
         observers = new ArrayList<>();
         payloads = new ArrayList<>();
+
+        this.ssh = ssh;
+        this.session = session;
+        if (logger != null) {
+            this.logger = logger;
+        } else {
+            this.logger = new Logger();
+        }
     }
 
     /**
@@ -75,7 +98,7 @@ public class SshManager extends Thread {
 
     /**
      * Close down the SSH connection thread and stop all command execution.
-     * @throws IOException
+     * @throws IOException Pass through of SSH related exceptions.
      */
     public void closeSshConnection() throws IOException {
 
@@ -93,7 +116,7 @@ public class SshManager extends Thread {
      * Queue the specified payload for execution.
      * @param payload Payload containing the SSH commands to execute.
      */
-    public void queuePayload(SshCommandCompletionPayload payload) {
+    public void queuePayload(SshCommandPayload payload) {
         if (!running) {
             throw new IllegalStateException("Cannot add payload for execution until thread has been started.");
         } else {
@@ -127,12 +150,12 @@ public class SshManager extends Thread {
             running = true;
         } catch (IOException e) {
             running = false;
-            Log.e(TAG, "Error creating ssh connection. " + e.getMessage());
+            logger.e(TAG, "Error creating ssh connection. " + e.getMessage());
         }
 
         while (running) {
 
-            SshCommandCompletionPayload payload = null;
+            SshCommandPayload payload = null;
 
             // Look for a payload to process.
             // If not found, sleep for a bit and try again.
@@ -152,69 +175,150 @@ public class SshManager extends Thread {
                 continue;
             }
 
-            List<String> commands = payload.getCommands();
-
-            Expect expect = null;
-
-            try {
-                session = ssh.startSession();
-                session.allocateDefaultPTY();
-                Session.Shell shell = session.startShell();
-                expect = new ExpectBuilder()
-                        .withOutput(shell.getOutputStream())
-                        .withInputs(shell.getInputStream(), shell.getErrorStream())
-                        .build();
-            } catch (IOException e) {
-                Log.e(TAG, String.format("Error creating interactive shell. Exception: %s", e.getMessage()));
+            if (payload == null) {
                 continue;
             }
 
-            try {
-                expect.expect(Matchers.contains("$"));
-            } catch (IOException e) {
-                Log.e(TAG, "SSH prompt is not ready for input. $ now found.");
-                continue;
-            }
+            List<CommandExpectPair> commands = payload.getCommands();
+            CommandExecutionResult result = executeCommands(commands);
 
-
-            for (String command : commands) {
-
-                // Facilitate early exit.
-                if (!running) {
-                    break;
-                }
-
-                try {
-                    expect.sendLine(command);
-                    expect.expect(Matcher.contains());
-
-
-                    Session.Command cmd = session.exec(command);
-                    Log.d(TAG, String.format("Executing SSH command: %s", command));
-                    Log.d(TAG, String.format("Response: %s", IOUtils.readFully(cmd.getInputStream()).toString()));
-                    cmd.join(5, TimeUnit.SECONDS);
-                    Log.d(TAG, "exit status: " + cmd.getExitStatus());
-                } catch (IOException e) {
-                    notifyObservsersOfError(payload, String.format("Error occurred executing statement %s. Exception message: %s", command, e.getMessage()));
-                    break;
-                }
-            }
-
-            if (!running) {
+            if (result.wasSuccessful()) {
                 notifyObserversOfCompletion(payload);
+            } else {
+                notifyObservsersOfError(payload, result.getMessage());
             }
         }
     }
 
-    private void notifyObservsersOfError(SshCommandCompletionPayload payload, String errorMessage) {
+    /**
+     * Execute the command list.
+     * @param commands List of commands to execute.
+     * @return Result of executing the commands.
+     */
+    private CommandExecutionResult executeCommands(List<CommandExpectPair> commands) {
+
+        Expect expect = null;
+        CommandExecutionResult result = null;
+
+        try {
+            session = ssh.startSession();
+            session.allocateDefaultPTY();
+            Session.Shell shell = session.startShell();
+            expect = new ExpectBuilder()
+                    .withOutput(shell.getOutputStream())
+                    .withInputs(shell.getInputStream(), shell.getErrorStream())
+                    .build();
+
+        } catch (IOException e) {
+            String message = String.format("Error creating interactive shell. Exception: %s", e.getMessage());
+            logger.e(TAG, message);
+            result = new CommandExecutionResult(false, message);
+        }
+
+        if (expect != null) {
+            result = processCommands(expect, commands);
+
+            try {
+                expect.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (session != null) {
+            try {
+                session.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Execute the specified commands. SHOULD ONLY BE CALLED BY executeCommands()!
+     * @param expect Expect instance to use.
+     * @param commands Commands to execute.
+     * @return Result of executing the commmands.
+     */
+    private CommandExecutionResult processCommands(Expect expect, List<CommandExpectPair> commands) {
+
+        // Always start by confirming we are at a prompt
+        try {
+            expect.expect(Matchers.contains("$"));
+        } catch (IOException e) {
+            String message = "SSH prompt is not ready for input. $ not found.";
+            logger.e(TAG, message);
+            return new CommandExecutionResult(false, message);
+        }
+
+        for (CommandExpectPair command : commands) {
+
+            // Facilitate early exit.
+            if (!running) {
+                break;
+            }
+
+            try {
+                String execute = command.getCommandToExecute();
+                String expected = command.getExpectedResult();
+
+                logger.d(TAG, String.format("Executing command [%s] and waiting for [%s]", execute, expected));
+
+                expect.sendLine(execute);
+                expect.expect(Matchers.contains(expected));
+
+            } catch (IOException e) {
+                String message = String.format("Error occurred executing statement %s. Exception message: %s", command, e.getMessage());
+                logger.e(TAG, message);
+                return new CommandExecutionResult(false, message);
+            }
+        }
+
+        return new CommandExecutionResult(true, "Command executed successfully.");
+    }
+
+    /**
+     * Notify observers of an error during execution.
+     * @param payload Payload that was executed.
+     * @param errorMessage Error message.
+     */
+    private void notifyObservsersOfError(SshCommandPayload payload, String errorMessage) {
         for (SshCommandCompletionObserver observer : observers) {
             observer.commandsCompletedWithError(payload, errorMessage);
         }
     }
 
-    private void notifyObserversOfCompletion(SshCommandCompletionPayload payload) {
+    /**
+     * Notify observers of a successful execution.
+     * @param payload Payload that was executed.
+     */
+    private void notifyObserversOfCompletion(SshCommandPayload payload) {
         for (SshCommandCompletionObserver observer : observers) {
             observer.commandsCompleted(payload);
+        }
+    }
+
+    /**
+     * Communicates back the result of executing commands.
+     */
+    public class CommandExecutionResult {
+
+        private boolean wasSuccessful;
+        private String message;
+
+        CommandExecutionResult(boolean wasSuccessful, String message) {
+            this.wasSuccessful = wasSuccessful;
+            this.message = message;
+        }
+
+        boolean wasSuccessful() {
+            return wasSuccessful;
+        }
+
+        String getMessage() {
+            return message;
         }
     }
 }

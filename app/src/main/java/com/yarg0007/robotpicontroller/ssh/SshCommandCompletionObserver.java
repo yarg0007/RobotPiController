@@ -6,12 +6,12 @@ public interface SshCommandCompletionObserver {
      * Called when the SSH operations have completed without error.
      * @param payload Payload that was executed.
      */
-    void commandsCompleted(SshCommandCompletionPayload payload);
+    void commandsCompleted(SshCommandPayload payload);
 
     /**
      * Called when the SSH operations have completed, but there was an error.
      * @param payload Payload that was executed.
      * @param errorMessage Description of the issue that occurred.
      */
-    void commandsCompletedWithError(SshCommandCompletionPayload payload, String errorMessage);
+    void commandsCompletedWithError(SshCommandPayload payload, String errorMessage);
 }

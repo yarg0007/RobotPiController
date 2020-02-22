@@ -1,11 +1,11 @@
-package com.yarg0007.robotpicontroller.ssh;
+package com.yarg0007.robotpicontroller.ssh.commands;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SshCommands {
+public class SshServerCommands {
 
     // Start video
     public static final String startVideoStreamId = "StartVideoStream";
