@@ -1,5 +1,7 @@
 package com.yarg0007.robotpicontroller.ssh.commands;
 
+import com.yarg0007.robotpicontroller.ssh.SshCommandPayload;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,17 +9,26 @@ import java.util.List;
 
 public class SshServerCommands {
 
-    // Start video
+    // Payload IDs
     public static final String startVideoStreamId = "StartVideoStream";
-
-    public static final List<String> startVideoStreamCommands = Arrays.asList(
-            "cd ~/mpjg-streamer-master/mjpg-streamer-experimental",
-            "export LD_LIBRARY_PATH=.",
-            "./mjpg_streamer -o \"output_http.so -w ./www\" -i \"input_raspicam.so\"");
-
-    // Stop video
-    // TODO
     public static final String stopVideoStreamId = "StopVideoStream";
+
+    public static SshCommandPayload getStartVideoPayload() {
+
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("cd ~/mpjg-streamer-master/mjpg-streamer-experimental", "$"));
+        commands.add(new CommandExpectPair("export LD_LIBRARY_PATH=.", "$"));
+        commands.add(new CommandExpectPair("./mjpg_streamer -o \"output_http.so -w ./www\" -i \"input_raspicam.so\"", "$"));
+
+        return new SshCommandPayload(startVideoStreamId, commands);
+    }
+
+    public static SshCommandPayload getStopVideoPayload() {
+
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+
+        return new SshCommandPayload(stopVideoStreamId, commands);
+    }
 
     public static final List<String> stopVideoStreamCommands = Arrays.asList("");
 

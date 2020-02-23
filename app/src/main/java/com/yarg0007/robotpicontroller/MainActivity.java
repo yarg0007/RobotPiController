@@ -125,6 +125,11 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         alert.show();
                     } else {
 
+                        // Step 1: Connect to server and startup the video stream and server app
+                        // Step 2: Wait for successful response from SSH operations and then:
+                        //      - Start video connection
+                        //      - Start controller connection - which starts audio connection
+
                         if (sshManager == null) {
                             try {
                                 sshManager = new SshManager(savedSshHostValue, savedSshUsernameValue, savedSshPasswordValue);
@@ -180,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
+                                // TODO: perform appropriate SSH operation(s) & wait for callback
 //                                case DialogInterface.BUTTON_POSITIVE:
 //                                    sshManager.queuePayload(new SshCommandPayload(SshServerCommands.shutdownRaspberryPiId, SshServerCommands.shutdownRaspberryPiCommands));
 //                                    break;
@@ -391,6 +397,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     @Override
     public void commandsCompletedWithError(SshCommandPayload payload, String errorMessage) {
 
+        // TODO: finish this up.
         if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
             alert.setMessage(getResources().getString(R.string.video_server_start_failure));
             alert.show();
