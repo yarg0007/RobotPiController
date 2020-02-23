@@ -65,7 +65,7 @@ public class SshObserverTester implements SshCommandCompletionObserver {
         if (errorPayload != null) {
             Assert.assertEquals("Error payload IDs must match.", expectedPayload.getId(), errorPayload.getId());
             Assert.assertEquals("Error payload commands must match.", expectedPayload.getCommands(), errorPayload.getCommands());
-            Assert.assertEquals("Error message must match.", expectedErrorMessage, errorMessage);
+            Assert.assertTrue(String.format("Error message must contain expected message. Expected: %s, Actual: %s", expectedErrorMessage, errorMessage), errorMessage.contains(expectedErrorMessage));
         } else {
             Assert.fail("Expected error notification, but never received notification.");
         }

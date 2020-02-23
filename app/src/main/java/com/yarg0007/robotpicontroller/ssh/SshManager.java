@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class SshManager extends Thread {
 
@@ -211,6 +212,7 @@ public class SshManager extends Thread {
                     .withOutput(shell.getOutputStream())
                     .withInputs(shell.getInputStream(), shell.getErrorStream())
                     .withExceptionOnFailure()
+                    .withTimeout(8, TimeUnit.SECONDS)
                     .build();
 
         } catch (IOException e) {
@@ -274,7 +276,7 @@ public class SshManager extends Thread {
                 expect.expect(Matchers.contains(expected));
 
             } catch (IOException e) {
-                String message = String.format("Error occurred executing statement %s. Exception message: %s", command, e.getMessage());
+                String message = String.format("Error occurred executing statement %s. Exception message: %s", command.getCommandToExecute(), e.getMessage());
                 logger.e(TAG, message);
                 return new CommandExecutionResult(false, message);
             }
