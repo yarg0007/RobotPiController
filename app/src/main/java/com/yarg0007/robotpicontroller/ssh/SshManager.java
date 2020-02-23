@@ -38,24 +38,24 @@ public class SshManager extends Thread {
     private final Logger logger;
 
     /**
-     * Inject the ssh client and session - use for injection.
+     * Create a new instance with the specified login settings.
      * @param sshHost SSH host server
      * @param username SSH username
      * @param password SSH password
      */
     public SshManager(String sshHost, String username, String password) {
-        this(sshHost, username, password, null, null, null);
+        this(sshHost, username, password, null, null);
     }
 
     /**
-     * Inject the ssh client and session - use for test injection.
+     * Use for test injection.
      * @param sshHost SSH host server
      * @param username SSH username
      * @param password SSH password
-     * @param ssh SSH Client instance
-     * @param session Session instance
+     * @param ssh Injected SSH Client instance (can be null)
+     * @param logger Injected logger (can be null)
      */
-    protected SshManager(String sshHost, String username, String password, SSHClient ssh, Session session, Logger logger) {
+    protected SshManager(String sshHost, String username, String password, SSHClient ssh, Logger logger) {
 
         this.sshHost = sshHost;
         this.sshUsername = username;
@@ -135,13 +135,15 @@ public class SshManager extends Thread {
     @Override
     public void run() {
 
-        AndroidConfig androidConfig = new AndroidConfig();
-        androidConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
-        ssh = new SSHClient(androidConfig);
-        ssh.addHostKeyVerifier(new PromiscuousVerifier());
+        if (ssh == null) {
+            AndroidConfig androidConfig = new AndroidConfig();
+            androidConfig.setKeepAliveProvider(KeepAliveProvider.KEEP_ALIVE);
+            ssh = new SSHClient(androidConfig);
+            ssh.addHostKeyVerifier(new PromiscuousVerifier());
 
-        Security.removeProvider("BC");
-        Security.insertProviderAt(new BouncyCastleProvider(), Security.getProviders().length + 1);
+            Security.removeProvider("BC");
+            Security.insertProviderAt(new BouncyCastleProvider(), Security.getProviders().length + 1);
+        }
 
         try {
             ssh.connect(sshHost);
@@ -204,9 +206,11 @@ public class SshManager extends Thread {
             session = ssh.startSession();
             session.allocateDefaultPTY();
             Session.Shell shell = session.startShell();
+
             expect = new ExpectBuilder()
                     .withOutput(shell.getOutputStream())
                     .withInputs(shell.getInputStream(), shell.getErrorStream())
+                    .withExceptionOnFailure()
                     .build();
 
         } catch (IOException e) {
