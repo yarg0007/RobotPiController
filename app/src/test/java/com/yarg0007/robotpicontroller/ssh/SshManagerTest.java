@@ -18,8 +18,9 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SshManagerTest {
 
@@ -94,26 +95,8 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        // This is how we inject the value that will simulate reading from the console.
-        // In this case, the hard coded prompt is the terminal input $ character.
-        // We don't want that to be present so we simulate that scenario with a garbage character.
-        InputStream inputStream = new InputStream() {
-
-            byte[] data = "x".getBytes();
-            int index = 0;
-
-            @Override
-            public int read() throws IOException {
-
-                // Return -1 when the byte array has been exhausted.
-                if (index >= data.length) {
-                    return -1;
-                }
-
-                byte b = data[index++];
-                return b;
-            }
-        };
+        List<String> commandResponses = Arrays.asList(new String[] {"X"});
+        SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
 
         // Return the input stream from our mock shell.
         Mockito.doReturn(inputStream).when(shell).getInputStream();
@@ -179,47 +162,9 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        byte[] prompt = "$".getBytes();
-        byte[] expectPrompt = "Z".getBytes();
-
-        ArrayList<Byte> byteData = new ArrayList<>();
-        for (byte b : prompt) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPrompt) {
-            byteData.add(b);
-        }
-
-        final Byte[] data = byteData.toArray(new Byte[0]);
-
-        // This is how we inject the value that will simulate reading from the console.
-        // In this case, we simulate an input stream that will force expect error.
-        InputStream inputStream = new InputStream() {
-
-            int index = 0;
-
-            @Override
-            public int read() throws IOException {
-
-                // Return -1 when the byte array has been exhausted.
-                if (index >= data.length) {
-                    return -1;
-                }
-
-                byte b = data[index++];
-                return b;
-            }
-        };
-
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                return;
-            }
-        };
+        List<String> commandResponses = Arrays.asList(new String[] {"$", "Z"});
+        SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
+        SshMockOutputStream outputStream = new SshMockOutputStream();
 
         // Return the input stream from our mock shell.
         Mockito.doReturn(inputStream).when(shell).getInputStream();
@@ -249,54 +194,9 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        byte[] prompt = "$".getBytes();
-        byte[] expectPromptA = "A".getBytes();
-        byte[] expectPromptB = "Z".getBytes();
-
-        ArrayList<Byte> byteData = new ArrayList<>();
-        for (byte b : prompt) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptA) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptB) {
-            byteData.add(b);
-        }
-
-        final Byte[] data = byteData.toArray(new Byte[0]);
-
-        // This is how we inject the value that will simulate reading from the console.
-        // In this case, we simulate an input stream that will force the expect timeout for the second command.
-        InputStream inputStream = new InputStream() {
-
-            int index = 0;
-
-            @Override
-            public int read() throws IOException {
-
-                // Return -1 when the byte array has been exhausted.
-                if (index >= data.length) {
-                    return -1;
-                }
-
-                byte b = data[index++];
-                return b;
-            }
-        };
-
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                return;
-            }
-        };
+        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "Z"});
+        SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
+        SshMockOutputStream outputStream = new SshMockOutputStream();
 
         // Return the input stream from our mock shell.
         Mockito.doReturn(inputStream).when(shell).getInputStream();
@@ -326,54 +226,9 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        byte[] prompt = "$".getBytes();
-        byte[] expectPromptA = "A".getBytes();
-        byte[] expectPromptB = "B".getBytes();
-
-        ArrayList<Byte> byteData = new ArrayList<>();
-        for (byte b : prompt) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptA) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptB) {
-            byteData.add(b);
-        }
-
-        final Byte[] data = byteData.toArray(new Byte[0]);
-
-        // This is how we inject the value that will simulate reading from the console.
-        // In this case, we simulate an input stream that will force the timeout.
-        InputStream inputStream = new InputStream() {
-
-            int index = 0;
-
-            @Override
-            public int read() throws IOException {
-
-                // Return -1 when the byte array has been exhausted.
-                if (index >= data.length) {
-                    return -1;
-                }
-
-                byte b = data[index++];
-                return b;
-            }
-        };
-
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                return;
-            }
-        };
+        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "B"});
+        SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
+        SshMockOutputStream outputStream = new SshMockOutputStream();
 
         // Return the input stream from our mock shell.
         Mockito.doReturn(inputStream).when(shell).getInputStream();
@@ -403,54 +258,9 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        byte[] prompt = "$".getBytes();
-        byte[] expectPromptA = "A".getBytes();
-        byte[] expectPromptB = "B".getBytes();
-
-        ArrayList<Byte> byteData = new ArrayList<>();
-        for (byte b : prompt) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptA) {
-            byteData.add(b);
-        }
-
-        byteData.add((byte)-1);
-
-        for (byte b : expectPromptB) {
-            byteData.add(b);
-        }
-
-        final Byte[] data = byteData.toArray(new Byte[0]);
-
-        // This is how we inject the value that will simulate reading from the console.
-        // In this case, we simulate an input stream that will force the timeout.
-        InputStream inputStream = new InputStream() {
-
-            int index = 0;
-
-            @Override
-            public int read() throws IOException {
-
-                // Return -1 when the byte array has been exhausted.
-                if (index >= data.length) {
-                    return -1;
-                }
-
-                byte b = data[index++];
-                return b;
-            }
-        };
-
-        OutputStream outputStream = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                return;
-            }
-        };
+        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "B"});
+        SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
+        SshMockOutputStream outputStream = new SshMockOutputStream();
 
         // Return the input stream from our mock shell.
         Mockito.doReturn(inputStream).when(shell).getInputStream();
