@@ -8,7 +8,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
-import net.sf.expectit.Expect;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,18 +23,17 @@ import java.util.List;
 
 public class SshManagerTest {
 
-    SshManager sshManager;
-    SSHClient sshClient;
-    Session session;
-    Logger logger;
+    private SshManager sshManager;
+    private SSHClient sshClient;
+    private Session session;
+    private Logger logger;
 
-    Connection connection;
-    KeepAlive keepAlive;
-    Session.Shell shell;
-    Expect expect;
+    private Connection connection;
+    private KeepAlive keepAlive;
+    private Session.Shell shell;
 
     @Before
-    public void setup() throws Throwable {
+    public void setup() {
         sshClient = Mockito.mock(SSHClient.class);
         session = Mockito.mock(Session.class);
         logger = new Logger();
@@ -44,7 +42,6 @@ public class SshManagerTest {
         connection = Mockito.mock(Connection.class);
         keepAlive = Mockito.mock(KeepAlive.class);
         shell = Mockito.mock(Session.Shell.class);
-        expect = Mockito.mock(Expect.class);
     }
 
     @After
@@ -58,8 +55,12 @@ public class SshManagerTest {
     public void sshConnectionErrorStopsThread() throws Throwable {
         Mockito.doThrow(new IOException()).when(sshClient).connect(Mockito.anyString());
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
-        sshManager.start();
-        Thread.sleep(2000);
+        sshManager.openSshConnection();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Assert.assertFalse("SSH Manager thread should not be running.", sshManager.isRunning());
     }
 
@@ -83,7 +84,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(errorPayload);
 
         // Wait for the error notification
@@ -95,7 +100,7 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        List<String> commandResponses = Arrays.asList(new String[] {"X"});
+        List<String> commandResponses = Arrays.asList("X");
         SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
 
         // Return the input stream from our mock shell.
@@ -113,7 +118,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(errorPayload);
 
         // Wait for the error notification
@@ -150,7 +159,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(errorPayload);
 
         // Wait for the error notification
@@ -162,7 +175,7 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        List<String> commandResponses = Arrays.asList(new String[] {"$", "Z"});
+        List<String> commandResponses = Arrays.asList("$", "Z");
         SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
         SshMockOutputStream outputStream = new SshMockOutputStream();
 
@@ -182,7 +195,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(errorPayload);
 
         // Wait for the error notification
@@ -194,7 +211,7 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "Z"});
+        List<String> commandResponses = Arrays.asList("$", "A", "Z");
         SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
         SshMockOutputStream outputStream = new SshMockOutputStream();
 
@@ -214,7 +231,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(errorPayload);
 
         // Wait for the error notification
@@ -226,7 +247,7 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "B"});
+        List<String> commandResponses = Arrays.asList("$", "A", "B");
         SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
         SshMockOutputStream outputStream = new SshMockOutputStream();
 
@@ -246,7 +267,11 @@ public class SshManagerTest {
         sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(successPayload);
 
         // Wait for the error notification
@@ -258,7 +283,7 @@ public class SshManagerTest {
 
         setupBasicMocks();
 
-        List<String> commandResponses = Arrays.asList(new String[] {"$", "A", "B"});
+        List<String> commandResponses = Arrays.asList("$", "A", "B");
         SshMockInputStream inputStream = new SshMockInputStream(commandResponses);
         SshMockOutputStream outputStream = new SshMockOutputStream();
 
@@ -279,7 +304,11 @@ public class SshManagerTest {
         sshManager.addObserver(observerTester);
         sshManager.removeObserver(observerTester);
         sshManager.openSshConnection();
-        Thread.sleep(1000);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         sshManager.queuePayload(successPayload);
 
         // Wait for the error notification

@@ -20,11 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class SshManager extends Thread {
+public class SshManager implements Runnable {
 
     private final static String TAG = "SSH_MANAGER";
 
     private boolean running = false;
+    private boolean stopped = true;
 
     private SSHClient ssh;
     private Session session;
@@ -94,7 +95,7 @@ public class SshManager extends Thread {
      * Open the SSH connection thread.
      */
     public void openSshConnection() {
-        this.start();
+        new Thread(this).start();
     }
 
     /**
@@ -104,7 +105,15 @@ public class SshManager extends Thread {
     public void closeSshConnection() throws IOException {
 
         running = false;
-        this.interrupt();
+        Thread.currentThread().interrupt();
+
+        while(!stopped) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+
+            }
+        }
 
         if (session != null) {
             session.close();
@@ -135,6 +144,8 @@ public class SshManager extends Thread {
 
     @Override
     public void run() {
+
+        stopped = false;
 
         if (ssh == null) {
             AndroidConfig androidConfig = new AndroidConfig();
@@ -191,6 +202,8 @@ public class SshManager extends Thread {
                 notifyObservsersOfError(payload, result.getMessage());
             }
         }
+
+        stopped = true;
     }
 
     /**

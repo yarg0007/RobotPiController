@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -15,6 +16,8 @@ import android.view.View;
 public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 
     // Working from: https://www.instructables.com/id/A-Simple-Android-UI-Joystick/
+
+    private static final String TAG = "Joypad";
 
     private float centerX;
     private float centerY;
@@ -131,8 +134,8 @@ public class Joypad extends SurfaceView implements SurfaceHolder.Callback, View.
     private void setUserInputValues(float inputX, float inputY) {
         userInputX = inputX;
         userInputY = inputY;
-        System.out.println(String.format("user input value: %f, %f", getUserInputXPosition(), getUserInputYPosition()));
-        System.out.println(String.format("user input percentage: %f, %f", getUserInputXPercentage(), getUserInputYPercentage()));
+        Log.d(TAG, String.format("user input value: %f, %f", getUserInputXPosition(), getUserInputYPosition()));
+        Log.d(TAG, String.format("user input percentage: %f, %f", getUserInputXPercentage(), getUserInputYPercentage()));
     }
 
     private void drawJoypad(float positionX, float positionY) {
