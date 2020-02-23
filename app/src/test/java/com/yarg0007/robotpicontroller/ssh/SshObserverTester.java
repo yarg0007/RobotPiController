@@ -22,6 +22,27 @@ public class SshObserverTester implements SshCommandCompletionObserver {
         errorMessage = null;
     }
 
+    public void waitForNoNotification() {
+
+        long startTime = System.nanoTime();
+
+        while(System.nanoTime() - startTime < timeout) {
+            if (successPayload != null) {
+                Assert.fail("Unexpected success notification received.");
+                break;
+            } else if (errorPayload != null) {
+                Assert.fail("Unexpected error notification received.");
+                break;
+            }
+
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void waitForSuccess(SshCommandPayload expectedPayload) {
 
         long startTime = System.nanoTime();

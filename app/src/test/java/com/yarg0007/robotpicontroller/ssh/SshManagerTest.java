@@ -196,7 +196,7 @@ public class SshManagerTest {
         final Byte[] data = byteData.toArray(new Byte[0]);
 
         // This is how we inject the value that will simulate reading from the console.
-        // In this case, we simulate an input stream that will force the timeout.
+        // In this case, we simulate an input stream that will force expect error.
         InputStream inputStream = new InputStream() {
 
             int index = 0;
@@ -244,12 +244,236 @@ public class SshManagerTest {
         observerTester.waitForError(errorPayload, "Error occurred executing statement A. Exception message:");
     }
 
-    public void receiveSuccessfulCommandExecutionNotification() throws Throwable {
+    @Test
+    public void commandExpectedOutputMatchFailureForSecondCommandThrowsErrorNotifiction() throws Throwable {
 
+        setupBasicMocks();
+
+        byte[] prompt = "$".getBytes();
+        byte[] expectPromptA = "A".getBytes();
+        byte[] expectPromptB = "Z".getBytes();
+
+        ArrayList<Byte> byteData = new ArrayList<>();
+        for (byte b : prompt) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptA) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptB) {
+            byteData.add(b);
+        }
+
+        final Byte[] data = byteData.toArray(new Byte[0]);
+
+        // This is how we inject the value that will simulate reading from the console.
+        // In this case, we simulate an input stream that will force the expect timeout for the second command.
+        InputStream inputStream = new InputStream() {
+
+            int index = 0;
+
+            @Override
+            public int read() throws IOException {
+
+                // Return -1 when the byte array has been exhausted.
+                if (index >= data.length) {
+                    return -1;
+                }
+
+                byte b = data[index++];
+                return b;
+            }
+        };
+
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                return;
+            }
+        };
+
+        // Return the input stream from our mock shell.
+        Mockito.doReturn(inputStream).when(shell).getInputStream();
+        Mockito.doReturn(outputStream).when(shell).getOutputStream();
+
+        // Setup the fake commands.
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("A", "A"));
+        commands.add(new CommandExpectPair("B", "B"));
+        SshCommandPayload errorPayload = new SshCommandPayload("errorID", commands);
+
+        // Setup the observer to wait for the fake commands.
+        SshObserverTester observerTester = new SshObserverTester(10);
+
+        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
+        sshManager.addObserver(observerTester);
+        sshManager.openSshConnection();
+        Thread.sleep(1000);
+        sshManager.queuePayload(errorPayload);
+
+        // Wait for the error notification
+        observerTester.waitForError(errorPayload, "Error occurred executing statement B. Exception message:");
     }
 
+    @Test
+    public void receiveSuccessfulCommandExecutionNotification() throws Throwable {
+
+        setupBasicMocks();
+
+        byte[] prompt = "$".getBytes();
+        byte[] expectPromptA = "A".getBytes();
+        byte[] expectPromptB = "B".getBytes();
+
+        ArrayList<Byte> byteData = new ArrayList<>();
+        for (byte b : prompt) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptA) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptB) {
+            byteData.add(b);
+        }
+
+        final Byte[] data = byteData.toArray(new Byte[0]);
+
+        // This is how we inject the value that will simulate reading from the console.
+        // In this case, we simulate an input stream that will force the timeout.
+        InputStream inputStream = new InputStream() {
+
+            int index = 0;
+
+            @Override
+            public int read() throws IOException {
+
+                // Return -1 when the byte array has been exhausted.
+                if (index >= data.length) {
+                    return -1;
+                }
+
+                byte b = data[index++];
+                return b;
+            }
+        };
+
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                return;
+            }
+        };
+
+        // Return the input stream from our mock shell.
+        Mockito.doReturn(inputStream).when(shell).getInputStream();
+        Mockito.doReturn(outputStream).when(shell).getOutputStream();
+
+        // Setup the fake commands.
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("A", "A"));
+        commands.add(new CommandExpectPair("B", "B"));
+        SshCommandPayload successPayload = new SshCommandPayload("Success", commands);
+
+        // Setup the observer to wait for the fake commands.
+        SshObserverTester observerTester = new SshObserverTester(10);
+
+        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
+        sshManager.addObserver(observerTester);
+        sshManager.openSshConnection();
+        Thread.sleep(1000);
+        sshManager.queuePayload(successPayload);
+
+        // Wait for the error notification
+        observerTester.waitForSuccess(successPayload);
+    }
+
+    @Test
     public void removeObserverSoWeDontReceiveCompletionNotification() throws Throwable {
 
+        setupBasicMocks();
+
+        byte[] prompt = "$".getBytes();
+        byte[] expectPromptA = "A".getBytes();
+        byte[] expectPromptB = "B".getBytes();
+
+        ArrayList<Byte> byteData = new ArrayList<>();
+        for (byte b : prompt) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptA) {
+            byteData.add(b);
+        }
+
+        byteData.add((byte)-1);
+
+        for (byte b : expectPromptB) {
+            byteData.add(b);
+        }
+
+        final Byte[] data = byteData.toArray(new Byte[0]);
+
+        // This is how we inject the value that will simulate reading from the console.
+        // In this case, we simulate an input stream that will force the timeout.
+        InputStream inputStream = new InputStream() {
+
+            int index = 0;
+
+            @Override
+            public int read() throws IOException {
+
+                // Return -1 when the byte array has been exhausted.
+                if (index >= data.length) {
+                    return -1;
+                }
+
+                byte b = data[index++];
+                return b;
+            }
+        };
+
+        OutputStream outputStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                return;
+            }
+        };
+
+        // Return the input stream from our mock shell.
+        Mockito.doReturn(inputStream).when(shell).getInputStream();
+        Mockito.doReturn(outputStream).when(shell).getOutputStream();
+
+        // Setup the fake commands.
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("A", "A"));
+        commands.add(new CommandExpectPair("B", "B"));
+        SshCommandPayload successPayload = new SshCommandPayload("Success", commands);
+
+        // Setup the observer to wait for the fake commands.
+        SshObserverTester observerTester = new SshObserverTester(10);
+
+        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient, logger);
+        sshManager.addObserver(observerTester);
+        sshManager.removeObserver(observerTester);
+        sshManager.openSshConnection();
+        Thread.sleep(1000);
+        sshManager.queuePayload(successPayload);
+
+        // Wait for the error notification
+        observerTester.waitForNoNotification();
     }
 
     private void setupBasicMocks() throws Throwable {
