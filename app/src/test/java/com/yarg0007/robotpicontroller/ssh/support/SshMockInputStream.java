@@ -10,10 +10,6 @@ public class SshMockInputStream extends InputStream {
     final Byte[] input;
     int index = 0;
 
-//    public SshMockInputStream(byte[] input) {
-//        this.input = input;
-//    }
-
     public SshMockInputStream(List<String> commandResponses) {
 
         ArrayList<Byte> byteData = new ArrayList<>();

@@ -6,8 +6,9 @@ public class Logger {
 
     private boolean disabledForTesting = false;
 
-    public void setDisabledForTesting(boolean disabled) {
+    public Logger setDisabledForTesting(boolean disabled) {
         this.disabledForTesting = disabled;
+        return this;
     }
 
     public void e(String tag, String message) {

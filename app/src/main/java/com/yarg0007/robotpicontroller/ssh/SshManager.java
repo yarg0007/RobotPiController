@@ -92,10 +92,18 @@ public class SshManager implements Runnable {
     }
 
     /**
-     * Open the SSH connection thread.
+     * Open the SSH connection thread. Returns once the thread is ready to receive commands.
      */
     public void openSshConnection() {
         new Thread(this).start();
+
+        while (!running) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**

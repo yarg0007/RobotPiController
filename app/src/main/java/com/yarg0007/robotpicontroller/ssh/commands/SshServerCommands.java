@@ -16,9 +16,9 @@ public class SshServerCommands {
     public static SshCommandPayload getStartVideoPayload() {
 
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
-        commands.add(new CommandExpectPair("cd ~/mpjg-streamer-master/mjpg-streamer-experimental", "$"));
+        commands.add(new CommandExpectPair("cd ~/mjpg-streamer-master/mjpg-streamer-experimental/", "$"));
         commands.add(new CommandExpectPair("export LD_LIBRARY_PATH=.", "$"));
-        commands.add(new CommandExpectPair("./mjpg_streamer -o \"output_http.so -w ./www\" -i \"input_raspicam.so\"", "$"));
+        commands.add(new CommandExpectPair("nohup ./mjpg_streamer -o \"output_http.so -w ./www\" -i \"input_raspicam.so\"", "nohup: ignoring input and appending output"));
 
         return new SshCommandPayload(startVideoStreamId, commands);
     }
