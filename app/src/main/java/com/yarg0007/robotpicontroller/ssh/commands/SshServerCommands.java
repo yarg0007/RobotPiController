@@ -2,17 +2,25 @@ package com.yarg0007.robotpicontroller.ssh.commands;
 
 import com.yarg0007.robotpicontroller.ssh.SshCommandPayload;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-public class SshServerCommands {
+public final class SshServerCommands {
 
-    // Payload IDs
     public static final String startVideoStreamId = "StartVideoStream";
     public static final String stopVideoStreamId = "StopVideoStream";
+    public static final String startServerId = "StartServer";
+    public static final String stopServerId = "StopServer";
+    public static final String shutdownRaspberryPiId = "ShutdownRaspberryPi";
 
+    // Make it impossible to instantiate
+    private SshServerCommands() {
+
+    }
+
+    /**
+     * Commands to start the video stream. ID: startVideoStreamId
+     * @return Command and expect pairs.
+     */
     public static SshCommandPayload getStartVideoPayload() {
 
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
@@ -23,6 +31,10 @@ public class SshServerCommands {
         return new SshCommandPayload(startVideoStreamId, commands);
     }
 
+    /**
+     * Commands to stop the video stream. ID: stopVideoStreamId
+     * @return Command and expect pairs.
+     */
     public static SshCommandPayload getStopVideoPayload() {
 
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
@@ -31,22 +43,39 @@ public class SshServerCommands {
         return new SshCommandPayload(stopVideoStreamId, commands);
     }
 
-    public static final List<String> stopVideoStreamCommands = Arrays.asList("");
+    /**
+     * Commands to start the robot server. ID: startServerId
+     * @return Command and expect pairs.
+     */
+    public static SshCommandPayload getStartServerPayload() {
+        // TODO: finish
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("sudo java -jar ", "$"));
 
-    // Start server executable
-    // TODO
-    public static final String startServerId = "StartServer";
+        return new SshCommandPayload(startServerId, commands);
+    }
 
-    public static final List<String> startServerCommands = Arrays.asList("");
+    /**
+     * Commands to stop the robot server. ID: stopServerId
+     * @return Command and expect pairs.
+     */
+    public static SshCommandPayload getStopServerPayload() {
+        // TODO: finish - confirm that this is the best way to end the server
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("killall java", "$"));
 
-    // Stop server executable
-    // TODO
-    public static final String stopServerId = "StopServer";
+        return new SshCommandPayload(stopServerId, commands);
+    }
 
-    public static final List<String> stopServerCommands = Arrays.asList("");
+    /**
+     * Commands to shutdown the raspberry pi. ID: shutdownRaspberryPiId
+     * @return Command and expect pairs.
+     */
+    public static SshCommandPayload getShutdownRaspberryPiPayload() {
+        // TODO: finish - confirm that this is the best way to end the server
+        ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("sudo shutdown -h now", ""));
 
-    // Shutdown raspberry pi
-    public static final String shutdownRaspberryPiId = "ShutdownRaspberryPi";
-
-    public static final List<String> shutdownRaspberryPiCommands = Arrays.asList("sudo shutdown -h now");
+        return new SshCommandPayload(shutdownRaspberryPiId, commands);
+    }
 }

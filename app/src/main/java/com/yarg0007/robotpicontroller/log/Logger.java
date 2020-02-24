@@ -2,22 +2,25 @@ package com.yarg0007.robotpicontroller.log;
 
 import android.util.Log;
 
-public class Logger {
+public final class Logger {
 
-    private boolean disabledForTesting = false;
+    private static boolean disabledForTesting = false;
 
-    public Logger setDisabledForTesting(boolean disabled) {
-        this.disabledForTesting = disabled;
-        return this;
+    private Logger() {
+
     }
 
-    public void e(String tag, String message) {
+    public static void setDisabledForTesting(boolean disabled) {
+        disabledForTesting = disabled;
+    }
+
+    public static void e(String tag, String message) {
         if (!disabledForTesting) {
             Log.e(tag, message);
         }
     }
 
-    public void d(String tag, String message) {
+    public static void d(String tag, String message) {
         if (!disabledForTesting) {
             Log.d(tag, message);
         }

@@ -37,8 +37,6 @@ public class SshManager implements Runnable {
     private final List<SshCommandCompletionObserver> observers;
     private final List<SshCommandPayload> payloads;
 
-    private final Logger logger;
-
     /**
      * Create a new instance with the specified login settings.
      * @param sshHost SSH host server
@@ -46,7 +44,7 @@ public class SshManager implements Runnable {
      * @param password SSH password
      */
     public SshManager(String sshHost, String username, String password) {
-        this(sshHost, username, password, null, null);
+        this(sshHost, username, password, null);
     }
 
     /**
@@ -55,9 +53,8 @@ public class SshManager implements Runnable {
      * @param username SSH username
      * @param password SSH password
      * @param ssh Injected SSH Client instance (can be null)
-     * @param logger Injected logger (can be null)
      */
-    protected SshManager(String sshHost, String username, String password, SSHClient ssh, Logger logger) {
+    protected SshManager(String sshHost, String username, String password, SSHClient ssh) {
 
         this.sshHost = sshHost;
         this.sshUsername = username;
@@ -68,11 +65,6 @@ public class SshManager implements Runnable {
 
         this.ssh = ssh;
         this.session = session;
-        if (logger != null) {
-            this.logger = logger;
-        } else {
-            this.logger = new Logger();
-        }
     }
 
     /**
@@ -172,7 +164,7 @@ public class SshManager implements Runnable {
             running = true;
         } catch (IOException e) {
             running = false;
-            logger.e(TAG, "Error creating ssh connection. " + e.getMessage());
+            Logger.e(TAG, "Error creating ssh connection. " + e.getMessage());
         }
 
         while (running) {
@@ -238,7 +230,7 @@ public class SshManager implements Runnable {
 
         } catch (IOException e) {
             String message = String.format("Error creating interactive shell. Exception: %s", e.getMessage());
-            logger.e(TAG, message);
+            Logger.e(TAG, message);
             result = new CommandExecutionResult(false, message);
         }
 
@@ -276,7 +268,7 @@ public class SshManager implements Runnable {
             expect.expect(Matchers.contains("$"));
         } catch (IOException e) {
             String message = "SSH prompt is not ready for input. $ not found.";
-            logger.e(TAG, message);
+            Logger.e(TAG, message);
             return new CommandExecutionResult(false, message);
         }
 
@@ -291,14 +283,14 @@ public class SshManager implements Runnable {
                 String execute = command.getCommandToExecute();
                 String expected = command.getExpectedResult();
 
-                logger.d(TAG, String.format("Executing command [%s] and waiting for [%s]", execute, expected));
+                Logger.d(TAG, String.format("Executing command [%s] and waiting for [%s]", execute, expected));
 
                 expect.sendLine(execute);
                 expect.expect(Matchers.contains(expected));
 
             } catch (IOException e) {
                 String message = String.format("Error occurred executing statement %s. Exception message: %s", command.getCommandToExecute(), e.getMessage());
-                logger.e(TAG, message);
+                Logger.e(TAG, message);
                 return new CommandExecutionResult(false, message);
             }
         }
