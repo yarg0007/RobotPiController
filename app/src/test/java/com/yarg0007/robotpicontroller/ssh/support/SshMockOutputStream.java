@@ -1,4 +1,4 @@
-package com.yarg0007.robotpicontroller.ssh;
+package com.yarg0007.robotpicontroller.ssh.support;
 
 import java.io.IOException;
 import java.io.OutputStream;

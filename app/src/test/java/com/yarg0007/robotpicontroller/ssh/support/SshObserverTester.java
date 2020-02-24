@@ -1,4 +1,7 @@
-package com.yarg0007.robotpicontroller.ssh;
+package com.yarg0007.robotpicontroller.ssh.support;
+
+import com.yarg0007.robotpicontroller.ssh.SshCommandCompletionObserver;
+import com.yarg0007.robotpicontroller.ssh.SshCommandPayload;
 
 import org.junit.Assert;
 

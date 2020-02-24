@@ -2,6 +2,9 @@ package com.yarg0007.robotpicontroller.ssh;
 
 import com.yarg0007.robotpicontroller.log.Logger;
 import com.yarg0007.robotpicontroller.ssh.commands.CommandExpectPair;
+import com.yarg0007.robotpicontroller.ssh.support.SshMockInputStream;
+import com.yarg0007.robotpicontroller.ssh.support.SshMockOutputStream;
+import com.yarg0007.robotpicontroller.ssh.support.SshObserverTester;
 
 import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.sshj.SSHClient;

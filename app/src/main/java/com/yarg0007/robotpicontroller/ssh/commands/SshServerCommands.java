@@ -26,6 +26,7 @@ public class SshServerCommands {
     public static SshCommandPayload getStopVideoPayload() {
 
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
+        commands.add(new CommandExpectPair("killall mjpg_streamer", "$"));
 
         return new SshCommandPayload(stopVideoStreamId, commands);
     }
