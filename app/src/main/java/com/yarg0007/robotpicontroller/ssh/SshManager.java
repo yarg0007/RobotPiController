@@ -89,7 +89,7 @@ public class SshManager implements Runnable {
     public void openSshConnection() {
         new Thread(this).start();
 
-        while (!running) {
+        while (!running && !stopped) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
