@@ -139,9 +139,19 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                                 sshManager.addObserver(MainActivity.this);
                                 sshManager.openSshConnection();
 
+                                long startTime = System.currentTimeMillis();
+
+                                while (!sshManager.isRunning() && System.currentTimeMillis() - startTime < 30000l) {
+                                    Thread.sleep(500);
+                                }
+
                                 if (sshManager.isRunning()) {
                                     // Start video stream & start the server
                                     sshManager.queuePayload(SshServerCommands.getStartVideoPayload());
+                                } else {
+                                    alert.setMessage(getResources().getString(R.string.ssh_connection_timeout));
+                                    alert.show();
+                                    return;
                                 }
                             } catch (Exception e) { // CORRECT THIS: WE MAY NOT NEED THIS EXCEPTION
                                 sshManager = null;
