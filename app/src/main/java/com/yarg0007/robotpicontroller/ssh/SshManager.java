@@ -164,7 +164,9 @@ public class SshManager implements Runnable {
             running = true;
         } catch (IOException e) {
             running = false;
-            Logger.e(TAG, "Error creating ssh connection. " + e.getMessage());
+            String message = "Error creating ssh connection. " + e.getMessage();
+            Logger.e(TAG, message);
+            notifyObservsersOfError(new SshCommandPayload("CONNECTION"), message);
         }
 
         while (running) {
