@@ -11,6 +11,7 @@ public final class SshServerCommands {
     public static final String startServerId = "StartServer";
     public static final String stopServerId = "StopServer";
     public static final String shutdownRaspberryPiId = "ShutdownRaspberryPi";
+    public static final String connectedId = "Connected";
 
     // Make it impossible to instantiate
     private SshServerCommands() {

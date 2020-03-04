@@ -135,24 +135,9 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
                         if (sshManager == null) {
                             try {
-                                sshManager = new SshManager(savedSshHostValue, savedSshUsernameValue, savedSshPasswordValue);
+                                sshManager = new SshManager(savedSshHostValue, Integer.parseInt(savedSshPortValue), savedSshUsernameValue, savedSshPasswordValue);
                                 sshManager.addObserver(MainActivity.this);
                                 sshManager.openSshConnection();
-
-                                long startTime = System.currentTimeMillis();
-
-                                while (!sshManager.isRunning() && System.currentTimeMillis() - startTime < 30000l) {
-                                    Thread.sleep(500);
-                                }
-
-                                if (sshManager.isRunning()) {
-                                    // Start video stream & start the server
-                                    sshManager.queuePayload(SshServerCommands.getStartVideoPayload());
-                                } else {
-                                    alert.setMessage(getResources().getString(R.string.ssh_connection_timeout));
-                                    alert.show();
-                                    return;
-                                }
                             } catch (Exception e) { // CORRECT THIS: WE MAY NOT NEED THIS EXCEPTION
                                 sshManager = null;
                                 alert.setMessage(getResources().getString(R.string.ssh_connection_failure));
@@ -160,8 +145,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                                 return;
                             }
                         }
-
-                        connected = true;
                     }
 
                 } else { // Disconnect
@@ -357,48 +340,72 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     }
 
     @Override
-    public void commandsCompleted(SshCommandPayload payload) {
+    public void commandsCompleted(SshCommandPayload payloadValue) {
+        final SshCommandPayload payload = payloadValue;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (payload.getId().equals(SshServerCommands.connectedId)) {
+                    connected = true;
+                    sshManager.queuePayload(SshServerCommands.getStartVideoPayload());
+                } else if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
+                    sshManager.queuePayload(SshServerCommands.getStartServerPayload());
+                } else if (payload.getId().equals(SshServerCommands.startServerId)) {
+                    createOrRestoreConnections();
+                } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
+                    sshManager.queuePayload(SshServerCommands.getStopServerPayload());
+                } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
+                    alert.setMessage("Server video and controller services have been stopped.");
+                    alert.show();
+                } else if (payload.getId().equals(SshServerCommands.shutdownRaspberryPiId)) {
+                    sshManager.removeObserver(MainActivity.this);
+                    try {
+                        sshManager.closeSshConnection();
+                    } catch (IOException e) {
+                        ;
+                    }
 
-        if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
-            sshManager.queuePayload(SshServerCommands.getStartServerPayload());
-        } else if (payload.getId().equals(SshServerCommands.startServerId)) {
-            createOrRestoreConnections();
-        } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
-            sshManager.queuePayload(SshServerCommands.getStopServerPayload());
-        } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
-            alert.setMessage("Server video and controller services have been stopped.");
-            alert.show();
-        } else if (payload.getId().equals(SshServerCommands.shutdownRaspberryPiId)) {
-            sshManager.removeObserver(MainActivity.this);
-            try {
-                sshManager.closeSshConnection();
-            } catch (IOException e) {
-                ;
+                    alert.setMessage("Raspberry Pi has been shutdown.");
+                    alert.show();
+                }
             }
-
-            alert.setMessage("Raspberry Pi has been shutdown.");
-            alert.show();
-        }
+        });
     }
 
     @Override
-    public void commandsCompletedWithError(SshCommandPayload payload, String errorMessage) {
+    public void commandsCompletedWithError(SshCommandPayload payloadValue, String errorMessageValue) {
 
-        if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
-            alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_start_failure), errorMessage));
-            alert.show();
-        } else if (payload.getId().equals(SshServerCommands.startServerId)) {
-            alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_start_failure), errorMessage));
-            alert.show();
-        } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
-            alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_stop_failure), errorMessage));
-            alert.show();
-        } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
-            alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_stop_failure), errorMessage));
-            alert.show();
-        } else {
-            alert.setMessage(String.format("ERROR: %s", errorMessage));
-            alert.show();
-        }
+        final SshCommandPayload payload = payloadValue;
+        final String errorMessage = errorMessageValue;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (payload.getId().equals(SshServerCommands.connectedId)) {
+                    connected = false;
+                    stopConnections();
+                    sshManager = null;
+                    connectButton.setChecked(false);
+                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.ssh_connection_timeout), errorMessage));
+                    alert.show();
+                } else if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
+                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_start_failure), errorMessage));
+                    alert.show();
+                } else if (payload.getId().equals(SshServerCommands.startServerId)) {
+                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_start_failure), errorMessage));
+                    alert.show();
+                } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
+                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_stop_failure), errorMessage));
+                    alert.show();
+                } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
+                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_stop_failure), errorMessage));
+                    alert.show();
+                } else {
+                    alert.setMessage(String.format("ERROR: %s", errorMessage));
+                    alert.show();
+                }
+            }
+        });
+
     }
 }

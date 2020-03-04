@@ -2,6 +2,7 @@ package com.yarg0007.robotpicontroller.ssh;
 
 import com.yarg0007.robotpicontroller.log.Logger;
 import com.yarg0007.robotpicontroller.ssh.commands.CommandExpectPair;
+import com.yarg0007.robotpicontroller.ssh.commands.SshServerCommands;
 
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.AndroidConfig;
@@ -31,6 +32,7 @@ public class SshManager implements Runnable {
     private Session session;
 
     private final String sshHost;
+    private final int sshPort;
     private final String sshUsername;
     private final String sshPassword;
 
@@ -40,23 +42,26 @@ public class SshManager implements Runnable {
     /**
      * Create a new instance with the specified login settings.
      * @param sshHost SSH host server
+     * @param sshPort SSH port
      * @param username SSH username
      * @param password SSH password
      */
-    public SshManager(String sshHost, String username, String password) {
-        this(sshHost, username, password, null);
+    public SshManager(String sshHost, int sshPort, String username, String password) {
+        this(sshHost, sshPort, username, password, null);
     }
 
     /**
      * Use for test injection.
      * @param sshHost SSH host server
+     * @param sshPort SSH port
      * @param username SSH username
      * @param password SSH password
      * @param ssh Injected SSH Client instance (can be null)
      */
-    protected SshManager(String sshHost, String username, String password, SSHClient ssh) {
+    protected SshManager(String sshHost, int sshPort, String username, String password, SSHClient ssh) {
 
         this.sshHost = sshHost;
+        this.sshPort = sshPort;
         this.sshUsername = username;
         this.sshPassword = password;
 
@@ -145,6 +150,9 @@ public class SshManager implements Runnable {
     @Override
     public void run() {
 
+        // Find the host IP
+        // TODO: get this mapping
+
         stopped = false;
 
         if (ssh == null) {
@@ -158,15 +166,16 @@ public class SshManager implements Runnable {
         }
 
         try {
-            ssh.connect(sshHost);
+            ssh.connect(sshHost, sshPort);
             ssh.getConnection().getKeepAlive().setKeepAliveInterval(5);
             ssh.authPassword(sshUsername, sshPassword);
+            notifyObserversOfCompletion(new SshCommandPayload(SshServerCommands.connectedId));
             running = true;
         } catch (IOException e) {
             running = false;
             String message = "Error creating ssh connection. " + e.getMessage();
             Logger.e(TAG, message);
-            notifyObservsersOfError(new SshCommandPayload("CONNECTION"), message);
+            notifyObservsersOfError(new SshCommandPayload(SshServerCommands.connectedId), message);
         }
 
         while (running) {

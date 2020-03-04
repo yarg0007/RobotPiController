@@ -56,7 +56,7 @@ public class SshManagerTest {
     @Test
     public void sshConnectionErrorStopsThread() throws Throwable {
         Mockito.doThrow(new IOException()).when(sshClient).connect(Mockito.anyString());
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.openSshConnection();
         try {
             Thread.sleep(1000);
@@ -83,7 +83,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -117,7 +117,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -158,7 +158,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -194,7 +194,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -230,7 +230,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -266,7 +266,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.openSshConnection();
         try {
@@ -302,7 +302,7 @@ public class SshManagerTest {
         // Setup the observer to wait for the fake commands.
         SshObserverTester observerTester = new SshObserverTester(10);
 
-        sshManager = new SshManager("testHost", "testUser", "testPassword", sshClient);
+        sshManager = new SshManager("testHost", 22, "testUser", "testPassword", sshClient);
         sshManager.addObserver(observerTester);
         sshManager.removeObserver(observerTester);
         sshManager.openSshConnection();
