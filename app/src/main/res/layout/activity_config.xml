@@ -56,93 +56,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-    <TextView
-        android:id="@+id/ssh_host_label"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.1"
-        android:text="@string/ssh_host_name_label" />
 
-    <EditText
-        android:id="@+id/ssh_host_field"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:ems="10"
-        android:inputType="text"
-        android:maxLines="1"
-        android:hint="@string/ssh_host_name_hint"
-        android:imeOptions="actionDone"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
         <TextView
-            android:id="@+id/ssh_port_label"
+            android:id="@+id/host_label"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
-            android:text="@string/ssh_host_port_label" />
+            android:text="@string/host_name_label" />
 
         <EditText
-            android:id="@+id/ssh_port_field"
+            android:id="@+id/host_field"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
-            android:inputType="number"
-            android:maxLines="1"
-            android:hint="@string/ssh_host_port_label"
-            android:text="22"
-            android:imeOptions="actionDone"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-    <TextView
-        android:id="@+id/ssh_username_label"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.1"
-        android:text="@string/ssh_userame_label" />
-
-    <EditText
-        android:id="@+id/ssh_username_field"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:ems="10"
-        android:maxLines="1"
-        android:inputType="text"
-        android:hint="@string/ssh_userame_label"
-        android:imeOptions="actionDone"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/ssh_password_label"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.1"
-            android:text="@string/ssh_password_label" />
-
-        <EditText
-            android:id="@+id/ssh_password_field"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="10"
-            android:inputType="textPassword"
-            android:maxLines="1"
-            android:hint="@string/ssh_password_label"
-            android:imeOptions="actionDone"/>
+            android:hint="@string/host_name_hint"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1" />
     </LinearLayout>
 
     <LinearLayout

@@ -15,7 +15,7 @@ import java.net.SocketException;
  *
  * Android AudioTrack example: https://github.com/DeanThomson/android-udp-audio-chat/blob/master/src/hw/dt83/udpchat/AudioCall.java
  */
-public class AndroidInputAudioStreamThread extends Thread {
+public class AndroidInputAudioStreamThread implements Runnable {
 
     private static final String LOG_TAG = "SPEAKER";
 
@@ -47,6 +47,7 @@ public class AndroidInputAudioStreamThread extends Thread {
 
     /** Flag execution state of thread. */
     private boolean running;
+    private Thread runningThread;
 
     AndroidInputAudioStreamThread(int serverPort) {
         this.serverPort = serverPort;
@@ -56,18 +57,17 @@ public class AndroidInputAudioStreamThread extends Thread {
      * Start the speaker thread after opening connections.
      */
     void startAudioStreamSpeakers() {
-
         running = true;
-        this.start();
+        runningThread = new Thread(this);
+        runningThread.start();
     }
 
     /**
      * Stop the speaker thread, close connections etc.
      */
     void stopAudioStreamSpeakers() {
-
         running = false;
-        this.interrupt();
+        runningThread.interrupt();
     }
 
     @Override

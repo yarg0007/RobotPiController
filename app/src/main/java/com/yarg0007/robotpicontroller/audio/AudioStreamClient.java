@@ -15,14 +15,23 @@ public class AudioStreamClient implements AudioControls {
     private AndroidOutputAudioStreamThread androidOutputAudioStreamThread;
     private AndroidInputAudioStreamThread androidInputAudioStreamThread;
 
-    public AudioStreamClient(String host, int port) throws UnknownHostException {
+    public AudioStreamClient(String host, int port) {
         androidOutputAudioStreamThread = new AndroidOutputAudioStreamThread(host, port);
         androidInputAudioStreamThread = new AndroidInputAudioStreamThread(port);
     }
 
-    public void startConnection() {
+    public boolean startConnection() {
         androidOutputAudioStreamThread.startConnection();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (!androidOutputAudioStreamThread.isRunning()) {
+            return false;
+        }
         androidInputAudioStreamThread.startAudioStreamSpeakers();
+        return true;
     }
 
     public void stopConnection() {

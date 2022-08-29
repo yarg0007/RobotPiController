@@ -16,10 +16,7 @@ public class ConfigActivity extends Activity {
 
     EditText videoUrl;
     EditText robotAudioPort;
-    EditText sshHost;
-    EditText sshPort;
-    EditText sshUsername;
-    EditText sshPassword;
+    EditText host;
     Button saveButton;
 
     @Override
@@ -29,26 +26,17 @@ public class ConfigActivity extends Activity {
 
         videoUrl = findViewById(R.id.video_stream_input);
         robotAudioPort = findViewById(R.id.robot_server_port_input);
-        sshHost = findViewById(R.id.ssh_host_field);
-        sshPort = findViewById(R.id.ssh_port_field);
-        sshUsername = findViewById(R.id.ssh_username_field);
-        sshPassword = findViewById(R.id.ssh_password_field);
+        host = findViewById(R.id.host_field);
         saveButton = findViewById(R.id.save_button);
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, getResources().getString(R.string.video_stream_input));
         String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotAudioPort, "");
-        String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, getResources().getString(R.string.ssh_host_name_label));
-        String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, getResources().getString(R.string.ssh_host_port_input));
-        String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, getResources().getString(R.string.ssh_userame_label));
-        String savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, "");
+        String savedSshHostValue = sharedPreferences.getString(SettingKeys.host, getResources().getString(R.string.host_name_label));
 
         videoUrl.setText(savedRtspUrlValue);
         robotAudioPort.setText(savedRobotPortValue);
-        sshHost.setText(savedSshHostValue);
-        sshPort.setText(savedSshPortValue);
-        sshUsername.setText(savedSshUsernameValue);
-        sshPassword.setText(savedSshPasswordValue);
+        host.setText(savedSshHostValue);
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,17 +45,11 @@ public class ConfigActivity extends Activity {
 
                 String rtspValue = videoUrl.getText().toString();
                 String robotPortValue = robotAudioPort.getText().toString();
-                String sshHostValue = sshHost.getText().toString();
-                String sshPortValue = sshPort.getText().toString();
-                String sshUsernameValue = sshUsername.getText().toString();
-                String sshPasswordValue = sshPassword.getText().toString();
+                String sshHostValue = host.getText().toString();
 
                 sharedPreferencesEditor.putString(SettingKeys.videoUrl, rtspValue);
                 sharedPreferencesEditor.putString(SettingKeys.robotAudioPort, robotPortValue);
-                sharedPreferencesEditor.putString(SettingKeys.sshHost, sshHostValue);
-                sharedPreferencesEditor.putString(SettingKeys.sshPort, sshPortValue);
-                sharedPreferencesEditor.putString(SettingKeys.sshUsername, sshUsernameValue);
-                sharedPreferencesEditor.putString(SettingKeys.sshPassword, sshPasswordValue);
+                sharedPreferencesEditor.putString(SettingKeys.host, sshHostValue);;
                 sharedPreferencesEditor.commit();
 
                 finish();

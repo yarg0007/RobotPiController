@@ -19,16 +19,12 @@ import com.yarg0007.robotpicontroller.audio.AudioStreamClient;
 import com.yarg0007.robotpicontroller.input.ControllerInputData;
 import com.yarg0007.robotpicontroller.input.ControllerInputThread;
 import com.yarg0007.robotpicontroller.settings.SettingKeys;
-import com.yarg0007.robotpicontroller.ssh.SshCommandCompletionObserver;
-import com.yarg0007.robotpicontroller.ssh.SshCommandPayload;
-import com.yarg0007.robotpicontroller.ssh.commands.SshServerCommands;
-import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData, SshCommandCompletionObserver {
+public class MainActivity extends AppCompatActivity implements ControllerInputData {
 
     private static final boolean USE_TEXTURE_VIEW = false;
     private static final boolean ENABLE_SUBTITLES = false;
@@ -46,16 +42,12 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     Joypad leftJoypad;
     Joypad rightJoypad;
 
-    SshManager sshManager;
     ControllerInputThread controllerInputThread;
     AudioStreamClient audioStreamClient;
 
     String savedVideoUrlValue;
     String savedRobotAudioport;
-    String savedSshHostValue;
-    String savedSshPortValue;
-    String savedSshUsernameValue;
-    String savedSshPasswordValue;
+    String savedHostValue;
     boolean connected = false;
 
     AlertDialog alert = null;
@@ -114,37 +106,11 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     } else if (savedRobotAudioport == null || savedRobotAudioport.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_port));
                         alert.show();
-                    } else if (savedSshHostValue == null || savedSshHostValue.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_host));
-                        alert.show();
-                    } else if (savedSshPortValue == null || savedSshPortValue.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_port));
-                        alert.show();
-                    } else if (savedSshUsernameValue == null || savedSshUsernameValue.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_username));
-                        alert.show();
-                    } else if (savedSshPasswordValue == null || savedSshPasswordValue.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_ssh_password));
+                    } else if (savedHostValue == null || savedHostValue.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_host));
                         alert.show();
                     } else {
-
-                        // Step 1: Connect to server and startup the video stream and server app
-                        // Step 2: Wait for successful response from SSH operations and then:
-                        //      - Start video connection
-                        //      - Start controller connection - which starts audio connection
-
-                        if (sshManager == null) {
-                            try {
-                                sshManager = new SshManager(savedSshHostValue, Integer.parseInt(savedSshPortValue), savedSshUsernameValue, savedSshPasswordValue);
-                                sshManager.addObserver(MainActivity.this);
-                                sshManager.openSshConnection();
-                            } catch (Exception e) { // CORRECT THIS: WE MAY NOT NEED THIS EXCEPTION
-                                sshManager = null;
-                                alert.setMessage(getResources().getString(R.string.ssh_connection_failure));
-                                alert.show();
-                                return;
-                            }
-                        }
+                        createOrRestoreConnections();
                     }
 
                 } else { // Disconnect
@@ -162,11 +128,11 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                         public void onClick(DialogInterface dialog, int which) {
                             switch (which){
                                 case DialogInterface.BUTTON_POSITIVE:
-                                    sshManager.queuePayload(SshServerCommands.getShutdownRaspberryPiPayload());
+                                    // TODO
                                     break;
 
                                 case DialogInterface.BUTTON_NEGATIVE:
-                                    sshManager.queuePayload(SshServerCommands.getStopVideoPayload());
+                                    // TODO
                                     break;
                            }
                         }
@@ -228,17 +194,16 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         // Start audio connection
         if (audioStreamClient == null) {
-            try {
-                audioStreamClient = new AudioStreamClient(savedSshHostValue, Integer.parseInt(savedRobotAudioport));
-            } catch (UnknownHostException e) {
-
+            audioStreamClient = new AudioStreamClient(savedHostValue, Integer.parseInt(savedRobotAudioport));
+            if (!audioStreamClient.startConnection()) {
+                alert.setMessage(getResources().getString(R.string.connect_alert_message_unknown_host));
+                alert.show();
+                return;
             }
-            audioStreamClient.startConnection();
         }
-
         // Start controller connection
         if (controllerInputThread == null) {
-            controllerInputThread = new ControllerInputThread(MainActivity.this, savedSshHostValue, Integer.valueOf(savedRobotAudioport));
+            controllerInputThread = new ControllerInputThread(MainActivity.this, savedHostValue, Integer.parseInt(savedRobotAudioport));
             controllerInputThread.setAudioControls(audioStreamClient);
             controllerInputThread.startControllerInputThread();
         }
@@ -247,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         if (webVideoView == null) {
             webVideoView = findViewById(R.id.video_layout);
         }
-
         webVideoView.loadUrl(savedVideoUrlValue);
     }
 
@@ -276,10 +240,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         savedVideoUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, null);
         savedRobotAudioport = sharedPreferences.getString(SettingKeys.robotAudioPort, null);
-        savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, null);
-        savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, null);
-        savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, null);
-        savedSshPasswordValue = sharedPreferences.getString(SettingKeys.sshPassword, null);
+        savedHostValue = sharedPreferences.getString(SettingKeys.host, null);
     }
 
     private void hideSystemUI() {
@@ -337,75 +298,5 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     @Override
     public String getSelectedAudioFilePath() {
         return audioSpinner.getSelectedItem().toString();
-    }
-
-    @Override
-    public void commandsCompleted(SshCommandPayload payloadValue) {
-        final SshCommandPayload payload = payloadValue;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (payload.getId().equals(SshServerCommands.connectedId)) {
-                    connected = true;
-                    sshManager.queuePayload(SshServerCommands.getStartVideoPayload());
-                } else if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
-                    sshManager.queuePayload(SshServerCommands.getStartServerPayload());
-                } else if (payload.getId().equals(SshServerCommands.startServerId)) {
-                    createOrRestoreConnections();
-                } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
-                    sshManager.queuePayload(SshServerCommands.getStopServerPayload());
-                } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
-                    alert.setMessage("Server video and controller services have been stopped.");
-                    alert.show();
-                } else if (payload.getId().equals(SshServerCommands.shutdownRaspberryPiId)) {
-                    sshManager.removeObserver(MainActivity.this);
-                    try {
-                        sshManager.closeSshConnection();
-                    } catch (IOException e) {
-                        ;
-                    }
-
-                    alert.setMessage("Raspberry Pi has been shutdown.");
-                    alert.show();
-                }
-            }
-        });
-    }
-
-    @Override
-    public void commandsCompletedWithError(SshCommandPayload payloadValue, String errorMessageValue) {
-
-        final SshCommandPayload payload = payloadValue;
-        final String errorMessage = errorMessageValue;
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (payload.getId().equals(SshServerCommands.connectedId)) {
-                    connected = false;
-                    stopConnections();
-                    sshManager = null;
-                    connectButton.setChecked(false);
-                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.ssh_connection_timeout), errorMessage));
-                    alert.show();
-                } else if (payload.getId().equals(SshServerCommands.startVideoStreamId)) {
-                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_start_failure), errorMessage));
-                    alert.show();
-                } else if (payload.getId().equals(SshServerCommands.startServerId)) {
-                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_start_failure), errorMessage));
-                    alert.show();
-                } else if (payload.getId().equals(SshServerCommands.stopServerId)) {
-                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.robot_server_stop_failure), errorMessage));
-                    alert.show();
-                } else if (payload.getId().equals(SshServerCommands.stopVideoStreamId)) {
-                    alert.setMessage(String.format("ERROR: %s | %s", getResources().getString(R.string.video_server_stop_failure), errorMessage));
-                    alert.show();
-                } else {
-                    alert.setMessage(String.format("ERROR: %s", errorMessage));
-                    alert.show();
-                }
-            }
-        });
-
     }
 }

@@ -14,7 +14,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
-public class AndroidOutputAudioStreamThread extends Thread {
+public class AndroidOutputAudioStreamThread implements Runnable {
 
     private static final String TAG = "OutAudioStreamThread";
 
@@ -28,24 +28,36 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     private boolean sendMicAudio = false;
     private boolean sendAudioFile = false;
-    private String audioFileToSend = null;
+    private String audioFileToSend;
 
-    private int port; //49809 (original port for sending audio) or 50005;
-    private final InetAddress host;
+    private final int port; //49809 (original port for sending audio) or 50005;
+    private final String hostName;
+    private InetAddress host;
+    private Thread runningThread;
 
-    AndroidOutputAudioStreamThread(String host, int port) throws UnknownHostException {
-        this.host = InetAddress.getByName(host);
+    AndroidOutputAudioStreamThread(String hostName, int port) {
+        this.hostName = hostName;
         this.port = port;
     }
 
     void startConnection() {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat,minBufSize*10);
+
+        if (running) {
+            return;
+        }
+
         running = true;
-        this.start();
+        runningThread = new Thread(this);
+        runningThread.start();
     }
 
     void stopConnection() {
         running = false;
+        runningThread.interrupt();
+    }
+
+    boolean isRunning() {
+        return running;
     }
 
     void playAudioFile(String audioFilePath) {
@@ -66,12 +78,36 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     void stopMicrophone() {
         sendMicAudio = false;
-        recorder.stop();
+        if (recorder != null) {
+            recorder.stop();
+        }
     }
 
     @Override
     public void run() {
 
+        try {
+            InetAddress[] matches = InetAddress.getAllByName(hostName);
+            int b = 0;
+            b++;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            host = InetAddress.getByName(hostName);
+        } catch (UnknownHostException e) {
+            running = false;
+            e.printStackTrace();
+            return;
+        }
+
+        if (host == null) {
+            running = false;
+            return;
+        }
+
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat,minBufSize*10);
         DatagramSocket socket = null;
 
         try {
