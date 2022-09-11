@@ -1,5 +1,7 @@
 package com.yarg0007.robotpicontroller.audio;
 
+import android.content.Context;
+
 import com.yarg0007.robotpicontroller.input.AudioControls;
 
 import java.net.UnknownHostException;
@@ -15,9 +17,9 @@ public class AudioStreamClient implements AudioControls {
     private AndroidOutputAudioStreamThread androidOutputAudioStreamThread;
     private AndroidInputAudioStreamThread androidInputAudioStreamThread;
 
-    public AudioStreamClient(String host, int port) {
-        androidOutputAudioStreamThread = new AndroidOutputAudioStreamThread(host, port);
-        androidInputAudioStreamThread = new AndroidInputAudioStreamThread(port);
+    public AudioStreamClient(String host, int audioInputPort, int audioOutputPort, Context context) {
+        androidOutputAudioStreamThread = new AndroidOutputAudioStreamThread(host, audioOutputPort, context);
+        androidInputAudioStreamThread = new AndroidInputAudioStreamThread(audioInputPort);
     }
 
     public boolean startConnection() {

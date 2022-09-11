@@ -152,7 +152,7 @@ public class ControllerInputThread extends Thread {
                 talkingInput = true;
             }
 
-            String dataMsg = String.format("%d,%d,%d,%d,%d,%d:?", (int)(100*driveInput), (int)(100*turnInput), (int)(100*headLiftInput), (int)(100*headTurnInput), (talkingInput ? 1 : 0), (openMouthInput ? 1 : 0));
+            String dataMsg = String.format("%d,%d,%d,%d,%d,%d:", (int)(100*driveInput), (int)(100*turnInput), (int)(100*headLiftInput), (int)(100*headTurnInput), (talkingInput ? 1 : 0), (openMouthInput ? 1 : 0));
 
             controllerDataClient.sendData(dataMsg);
 

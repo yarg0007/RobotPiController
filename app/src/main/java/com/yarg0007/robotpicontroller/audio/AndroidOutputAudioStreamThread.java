@@ -1,9 +1,19 @@
 package com.yarg0007.robotpicontroller.audio;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -19,11 +29,11 @@ public class AndroidOutputAudioStreamThread implements Runnable {
     private static final String TAG = "OutAudioStreamThread";
 
     private AudioRecord recorder;
+    private Context context;
 
-    private int sampleRate = 16000 ; // 44100 for music
-    private int channelConfig = AudioFormat.CHANNEL_OUT_MONO;
+    private int sampleRate = 16000; // 44100 for music
+    private int channelConfig = AudioFormat.CHANNEL_OUT_STEREO; //.CHANNEL_OUT_MONO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-    private int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
     private boolean running = false;
 
     private boolean sendMicAudio = false;
@@ -35,9 +45,10 @@ public class AndroidOutputAudioStreamThread implements Runnable {
     private InetAddress host;
     private Thread runningThread;
 
-    AndroidOutputAudioStreamThread(String hostName, int port) {
+    AndroidOutputAudioStreamThread(String hostName, int port, Context context) {
         this.hostName = hostName;
         this.port = port;
+        this.context = context;
     }
 
     void startConnection() {
@@ -87,14 +98,6 @@ public class AndroidOutputAudioStreamThread implements Runnable {
     public void run() {
 
         try {
-            InetAddress[] matches = InetAddress.getAllByName(hostName);
-            int b = 0;
-            b++;
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        try {
             host = InetAddress.getByName(hostName);
         } catch (UnknownHostException e) {
             running = false;
@@ -107,7 +110,18 @@ public class AndroidOutputAudioStreamThread implements Runnable {
             return;
         }
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat,minBufSize*10);
+        int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelConfig, audioFormat, minBufSize);
         DatagramSocket socket = null;
 
         try {

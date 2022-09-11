@@ -34,21 +34,67 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
         <TextView
-            android:id="@+id/robot_server_port_label"
+            android:id="@+id/server_port_controller_label"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
-            android:text="@string/server_port_label" />
+            android:text="@string/server_port_controller_label" />
 
         <EditText
-            android:id="@+id/robot_server_port_input"
+            android:id="@+id/server_port_controller_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:ems="10"
             android:inputType="number"
             android:maxLines="1"
-            android:hint="@string/server_port_hint"
+            android:hint="@string/server_port_controller_hint"
+            android:imeOptions="actionDone"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/server_port_audio_input_label"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:text="@string/server_port_audio_input_label" />
+
+        <EditText
+            android:id="@+id/server_port_audio_input_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="number"
+            android:maxLines="1"
+            android:hint="@string/server_port_audio_input_hint"
+            android:imeOptions="actionDone"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:id="@+id/server_port_audio_output_label"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:text="@string/server_port_audio_output_label" />
+
+        <EditText
+            android:id="@+id/server_port_audio_output_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="number"
+            android:maxLines="1"
+            android:hint="@string/server_port_audio_output_hint"
             android:imeOptions="actionDone"/>
     </LinearLayout>
 

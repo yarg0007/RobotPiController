@@ -3,10 +3,17 @@ package com.yarg0007.robotpicontroller;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.text.format.Formatter;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -22,6 +29,7 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData {
@@ -46,7 +54,9 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     AudioStreamClient audioStreamClient;
 
     String savedVideoUrlValue;
-    String savedRobotAudioport;
+    String savedControllerInputPort;
+    String savedAudioInputPort;
+    String savedAudioOutputPort;
     String savedHostValue;
     boolean connected = false;
 
@@ -103,8 +113,14 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     if (savedVideoUrlValue == null || savedVideoUrlValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_message_rtsp));
                         alert.show();
-                    } else if (savedRobotAudioport == null || savedRobotAudioport.isEmpty()) {
-                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_port));
+                    } else if (savedControllerInputPort == null || savedControllerInputPort.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_controller_port));
+                        alert.show();
+                    } else if (savedAudioInputPort == null || savedAudioInputPort.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_audio_input_port));
+                        alert.show();
+                    } else if (savedAudioOutputPort == null || savedAudioOutputPort.isEmpty()) {
+                        alert.setMessage(getResources().getString(R.string.connect_alert_message_robot_audio_output_port));
                         alert.show();
                     } else if (savedHostValue == null || savedHostValue.isEmpty()) {
                         alert.setMessage(getResources().getString(R.string.connect_alert_host));
@@ -112,6 +128,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     } else {
                         createOrRestoreConnections();
                     }
+
+                    connected = true;
 
                 } else { // Disconnect
 
@@ -137,11 +155,6 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                            }
                         }
                     };
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setMessage("Would you like to shutdown the robot?").setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener).show();
-
                 }
             }
         });
@@ -194,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         // Start audio connection
         if (audioStreamClient == null) {
-            audioStreamClient = new AudioStreamClient(savedHostValue, Integer.parseInt(savedRobotAudioport));
+            audioStreamClient = new AudioStreamClient(savedHostValue, Integer.parseInt(savedAudioInputPort), Integer.parseInt(savedAudioOutputPort), getApplicationContext());
             if (!audioStreamClient.startConnection()) {
                 alert.setMessage(getResources().getString(R.string.connect_alert_message_unknown_host));
                 alert.show();
@@ -203,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         }
         // Start controller connection
         if (controllerInputThread == null) {
-            controllerInputThread = new ControllerInputThread(MainActivity.this, savedHostValue, Integer.parseInt(savedRobotAudioport));
+            controllerInputThread = new ControllerInputThread(MainActivity.this, savedHostValue, Integer.parseInt(savedControllerInputPort));
             controllerInputThread.setAudioControls(audioStreamClient);
             controllerInputThread.startControllerInputThread();
         }
@@ -239,7 +252,9 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         savedVideoUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, null);
-        savedRobotAudioport = sharedPreferences.getString(SettingKeys.robotAudioPort, null);
+        savedControllerInputPort = sharedPreferences.getString(SettingKeys.controllerInputPort, null);
+        savedAudioInputPort = sharedPreferences.getString(SettingKeys.savedAudioInputPort, null);
+        savedAudioOutputPort = sharedPreferences.getString(SettingKeys.savedAudioOutputPort, null);
         savedHostValue = sharedPreferences.getString(SettingKeys.host, null);
     }
 

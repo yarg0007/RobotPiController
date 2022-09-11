@@ -11,20 +11,26 @@
     <string name="toggle_connect_off">Connect</string>
 
     <string name="video_stream_url_label">Video StreamL</string>
-    <string name="video_stream_input">http://robotpi.local:8080?action=stream</string>
+    <string name="video_stream_input">http://raspi.lan:8080?action=stream</string>
 
     <string name="host_name_label">server host/ip</string>
-    <string name="host_name_hint">robotpi.local</string>
+    <string name="host_name_hint">raspi.lan</string>
 
-    <string name="server_port_label">Robot audio port</string>
-    <string name="server_port_hint">49801</string>
+    <string name="server_port_controller_label">Controller input port</string>
+    <string name="server_port_controller_hint">49801</string>
+    <string name="server_port_audio_input_label">Audio input port</string>
+    <string name="server_port_audio_input_hint">49808</string>
+    <string name="server_port_audio_output_label">Audio output port</string>
+    <string name="server_port_audio_output_hint">49809</string>
 
     <string name="save_button">Save</string>
 
     <string name="connect_alert_title">Error</string>
     <string name="connect_alert_message_rtsp">RTSP URL was not set. Please specify a RTSP URL in the config settings.</string>
     <string name="connect_alert_message_robot_host">Robot host was not set. Please specify a host for your robot.</string>
-    <string name="connect_alert_message_robot_port">Robot port was not set. Please specify a port for your robot.</string>
+    <string name="connect_alert_message_robot_controller_port">Robot controller port was not set. Please specify a controller port for your robot.</string>
+    <string name="connect_alert_message_robot_audio_input_port">Robot audio input port was not set. Please specify an audio input port for your robot.</string>
+    <string name="connect_alert_message_robot_audio_output_port">Robot audio output port was not set. Please specify an audio output port for your robot.</string>
     <string name="connect_alert_host">Host was not set. Please specify a host in the config settings.</string>
     <string name="connect_alert_button">Done</string>
     <string name="connect_alert_message_unknown_host">Host specified is unknown.</string>

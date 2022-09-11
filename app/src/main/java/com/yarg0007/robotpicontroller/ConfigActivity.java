@@ -1,9 +1,13 @@
 package com.yarg0007.robotpicontroller;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.nsd.NsdManager;
+import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,7 +19,9 @@ import com.yarg0007.robotpicontroller.settings.SettingKeys;
 public class ConfigActivity extends Activity {
 
     EditText videoUrl;
-    EditText robotAudioPort;
+    EditText robotControllerPort;
+    EditText robotAudioInputPort;
+    EditText robotAudioOutputPort;
     EditText host;
     Button saveButton;
 
@@ -25,18 +31,24 @@ public class ConfigActivity extends Activity {
         setContentView(R.layout.activity_config);
 
         videoUrl = findViewById(R.id.video_stream_input);
-        robotAudioPort = findViewById(R.id.robot_server_port_input);
+        robotControllerPort = findViewById(R.id.server_port_controller_text);
+        robotAudioInputPort = findViewById(R.id.server_port_audio_input_text);
+        robotAudioOutputPort = findViewById(R.id.server_port_audio_output_text);
         host = findViewById(R.id.host_field);
         saveButton = findViewById(R.id.save_button);
 
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, getResources().getString(R.string.video_stream_input));
-        String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotAudioPort, "");
-        String savedSshHostValue = sharedPreferences.getString(SettingKeys.host, getResources().getString(R.string.host_name_label));
+        String savedRobotControllerPortValue = sharedPreferences.getString(SettingKeys.controllerInputPort, "");
+        String savedRobotAudioInputPortValue = sharedPreferences.getString(SettingKeys.savedAudioInputPort, "");
+        String savedRobotAudioOutputPortValue = sharedPreferences.getString(SettingKeys.savedAudioOutputPort, "");
+        String savedHostValue = sharedPreferences.getString(SettingKeys.host, getResources().getString(R.string.host_name_label));
 
         videoUrl.setText(savedRtspUrlValue);
-        robotAudioPort.setText(savedRobotPortValue);
-        host.setText(savedSshHostValue);
+        robotControllerPort.setText(savedRobotControllerPortValue);
+        robotAudioInputPort.setText(savedRobotAudioInputPortValue);
+        robotAudioOutputPort.setText(savedRobotAudioOutputPortValue);
+        host.setText(savedHostValue);
 
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -44,11 +56,15 @@ public class ConfigActivity extends Activity {
                 SharedPreferences.Editor sharedPreferencesEditor = sharedPreferences.edit();
 
                 String rtspValue = videoUrl.getText().toString();
-                String robotPortValue = robotAudioPort.getText().toString();
+                String robotControllerPortValue = robotControllerPort.getText().toString();
+                String robotPortInputValue = robotAudioInputPort.getText().toString();
+                String robotPortOutputValue = robotAudioOutputPort.getText().toString();
                 String sshHostValue = host.getText().toString();
 
                 sharedPreferencesEditor.putString(SettingKeys.videoUrl, rtspValue);
-                sharedPreferencesEditor.putString(SettingKeys.robotAudioPort, robotPortValue);
+                sharedPreferencesEditor.putString(SettingKeys.controllerInputPort, robotControllerPortValue);
+                sharedPreferencesEditor.putString(SettingKeys.savedAudioInputPort, robotPortInputValue);
+                sharedPreferencesEditor.putString(SettingKeys.savedAudioOutputPort, robotPortOutputValue);
                 sharedPreferencesEditor.putString(SettingKeys.host, sshHostValue);;
                 sharedPreferencesEditor.commit();
 
