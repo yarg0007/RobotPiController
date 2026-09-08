@@ -19,7 +19,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -49,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     Button configButton;
     ToggleButton connectButton;
-    Spinner audioSpinner;
+    ListView audioTrackList;
     Switch stickyHead;
     Button openMouthButton;
     ToggleButton playAudioToggleButton;
@@ -105,7 +106,15 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
-        audioSpinner = findViewById(R.id.audio_spinner);
+        audioTrackList = findViewById(R.id.audio_track_list);
+        String[] audioFiles = getResources().getStringArray(R.array.audio_files);
+        ArrayAdapter<String> audioAdapter = new ArrayAdapter<>(
+                this, R.layout.list_item_audio_track, android.R.id.text1, audioFiles);
+        audioTrackList.setAdapter(audioAdapter);
+        audioTrackList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        audioTrackList.setItemChecked(0, true);
+        audioTrackList.setOnItemClickListener((parent, view, position, id) ->
+                audioTrackList.setItemChecked(position, true));
         openMouthButton = findViewById(R.id.open_mouth_button);
         playAudioToggleButton = findViewById(R.id.play_audio_toggle_button);
         speakButton = findViewById(R.id.speak_button);
@@ -391,7 +400,9 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public String getSelectedAudioFilePath() {
-        String filename = audioSpinner.getSelectedItem().toString();
+        int pos = audioTrackList.getCheckedItemPosition();
+        if (pos == ListView.INVALID_POSITION) pos = 0;
+        String filename = (String) audioTrackList.getAdapter().getItem(pos);
         return new File(getFilesDir(), filename).getAbsolutePath();
     }
 

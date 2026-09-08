@@ -50,18 +50,6 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
-                <Spinner
-                    android:id="@+id/audio_spinner"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/audio_files"
-                    android:background="@color/transparentUI"/>
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
-
                 <Switch
                     android:id="@+id/stickyhead"
                     android:layout_width="5dp"
@@ -98,6 +86,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
+
+                    <ListView
+                        android:id="@+id/audio_track_list"
+                        android:layout_width="220dp"
+                        android:layout_height="120dp"
+                        android:divider="#44FFFFFF"
+                        android:dividerHeight="1dp"
+                        android:background="#80000000"
+                        android:scrollbars="vertical"
+                        android:fadeScrollbars="false"/>
 
                     <Button
                         android:id="@+id/open_mouth_button"
