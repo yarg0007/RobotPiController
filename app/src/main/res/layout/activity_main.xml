@@ -150,6 +150,40 @@
 
             </LinearLayout>
         </LinearLayout>
+        <LinearLayout
+            android:id="@+id/connection_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:background="#B3000000"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:indeterminate="true"/>
+
+            <TextView
+                android:id="@+id/connection_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connecting..."
+                android:textColor="#FFFFFFFF"
+                android:textSize="18sp"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/connection_elapsed_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFCCCCCC"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
     </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

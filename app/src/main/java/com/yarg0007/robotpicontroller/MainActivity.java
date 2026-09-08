@@ -11,13 +11,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.yarg0007.robotpicontroller.audio.AudioStreamClient;
@@ -39,7 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 
-public class MainActivity extends AppCompatActivity implements ControllerInputData, SshCommandCompletionObserver, ServerConnectionObserver {
+public class MainActivity extends AppCompatActivity implements ControllerInputData, SshCommandCompletionObserver, ServerConnectionObserver, VideoStream.OnVideoStartedListener {
 
     VideoStream videoStreamView;
 
@@ -71,6 +75,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     AlertDialog alert = null;
 
+    private LinearLayout connectionOverlay;
+    private TextView connectionStatusText;
+    private TextView connectionElapsedText;
+    private long connectionStartTime;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable elapsedTimeUpdater;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +96,12 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
         copyAudioFilesToInternalStorage();
 
+        connectionOverlay = findViewById(R.id.connection_overlay);
+        connectionStatusText = findViewById(R.id.connection_status_text);
+        connectionElapsedText = findViewById(R.id.connection_elapsed_text);
+
         videoStreamView = findViewById(R.id.video_layout);
+        videoStreamView.setOnVideoStartedListener(this);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
@@ -149,12 +165,14 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     } else {
 
                         if (sshManager == null) {
+                            showConnectionOverlay("Connecting to Pi...");
                             try {
                                 sshManager = new SshManager(savedSshHostValue, Integer.parseInt(savedSshPortValue), savedSshUsernameValue, savedSshPasswordValue);
                                 sshManager.addObserver(MainActivity.this);
                                 sshManager.openSshConnection();
                             } catch (Exception e) {
                                 sshManager = null;
+                                hideConnectionOverlay();
                                 alert.setMessage(getResources().getString(R.string.ssh_connection_failure));
                                 alert.show();
                                 return;
@@ -282,6 +300,37 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         }
     }
 
+    private void showConnectionOverlay(String status) {
+        connectionStartTime = System.currentTimeMillis();
+        connectionStatusText.setText(status);
+        connectionElapsedText.setVisibility(View.GONE);
+        connectionOverlay.setVisibility(View.VISIBLE);
+        elapsedTimeUpdater = new Runnable() {
+            @Override
+            public void run() {
+                long elapsedSec = (System.currentTimeMillis() - connectionStartTime) / 1000;
+                connectionElapsedText.setVisibility(View.VISIBLE);
+                connectionElapsedText.setText(elapsedSec + "s elapsed");
+                mainHandler.postDelayed(this, 1000);
+            }
+        };
+        mainHandler.postDelayed(elapsedTimeUpdater, 2000);
+    }
+
+    private void updateConnectionStatus(String status) {
+        if (connectionOverlay.getVisibility() == View.VISIBLE) {
+            connectionStatusText.setText(status);
+        }
+    }
+
+    private void hideConnectionOverlay() {
+        if (elapsedTimeUpdater != null) {
+            mainHandler.removeCallbacks(elapsedTimeUpdater);
+            elapsedTimeUpdater = null;
+        }
+        connectionOverlay.setVisibility(View.GONE);
+    }
+
     private void getConfigurationValues() {
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         savedVideoUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, null);
@@ -373,8 +422,10 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
             public void run() {
                 if (payload.getId().equals(SshServerCommands.connectedId)) {
                     connected = true;
+                    updateConnectionStatus("Starting server...");
                     sshManager.queuePayload(SshServerCommands.getStartServerPayload());
                 } else if (payload.getId().equals(SshServerCommands.startServerId)) {
+                    updateConnectionStatus("Connecting to server...");
                     new ServerConnectionThread(savedSshHostValue, Integer.parseInt(savedServerHttpPort), true, false, MainActivity.this).start();
                 }
             }
@@ -389,6 +440,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                hideConnectionOverlay();
                 if (payload.getId().equals(SshServerCommands.connectedId)) {
                     connected = false;
                     stopConnections();
@@ -414,6 +466,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                updateConnectionStatus("Starting video...");
                 createOrRestoreConnections();
             }
         });
@@ -424,10 +477,21 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                hideConnectionOverlay();
                 connected = false;
                 connectButton.setChecked(false);
                 alert.setMessage("Failed to connect to robot server: " + message);
                 alert.show();
+            }
+        });
+    }
+
+    @Override
+    public void onVideoStarted() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                hideConnectionOverlay();
             }
         });
     }

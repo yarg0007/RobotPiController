@@ -20,7 +20,7 @@ public class ServerConnectionThread extends Thread {
         this.isConnect = isConnect;
         this.shutdown = shutdown;
         this.observer = observer;
-        this.retryDelayMs = 3000;
+        this.retryDelayMs = 500;
     }
 
     ServerConnectionThread(ServerConnectionClient client, String host, int port,
@@ -44,7 +44,7 @@ public class ServerConnectionThread extends Thread {
     }
 
     private void runConnect() {
-        int maxAttempts = 5;
+        int maxAttempts = 20;
         IOException lastException = null;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {

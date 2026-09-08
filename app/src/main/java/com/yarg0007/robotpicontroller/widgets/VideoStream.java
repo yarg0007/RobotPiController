@@ -10,8 +10,12 @@ import java.io.IOException;
 
 public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, SurfaceHolder.Callback {
 
+    public interface OnVideoStartedListener {
+        void onVideoStarted();
+    }
+
     private static final int MAX_RETRIES = 5;
-    private static final int RETRY_DELAY_MS = 3000;
+    private static final int RETRY_DELAY_MS = 1000;
 
     private MediaPlayer mediaPlayer;
     private String streamHost;
@@ -20,6 +24,7 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
     private boolean startPending = false;
     private boolean wantPlaying = false;
     private int retryCount = 0;
+    private OnVideoStartedListener onVideoStartedListener;
 
     public VideoStream(Context context) {
         super(context);
@@ -44,6 +49,10 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
     public void configure(String host, int port) {
         this.streamHost = host;
         this.streamPort = port;
+    }
+
+    public void setOnVideoStartedListener(OnVideoStartedListener listener) {
+        this.onVideoStartedListener = listener;
     }
 
     public void startVideoStream() {
@@ -97,6 +106,9 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
     public void onPrepared(MediaPlayer mp) {
         retryCount = 0;
         mp.start();
+        if (onVideoStartedListener != null) {
+            onVideoStartedListener.onVideoStarted();
+        }
     }
 
     @Override
