@@ -23,6 +23,11 @@
     <string name="server_port_label">Robot audio port</string>
     <string name="server_port_hint">49801</string>
 
+    <string name="server_http_port_label">HTTP port</string>
+    <string name="server_http_port_hint">8001</string>
+    <string name="video_stream_port_label">Video port</string>
+    <string name="video_stream_port_hint">5000</string>
+
     <string name="save_button">Save</string>
 
     <string name="connect_alert_title">Error</string>

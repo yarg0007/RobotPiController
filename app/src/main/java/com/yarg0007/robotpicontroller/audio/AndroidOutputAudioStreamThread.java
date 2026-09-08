@@ -21,7 +21,7 @@ public class AndroidOutputAudioStreamThread extends Thread {
     private AudioRecord recorder;
 
     private int sampleRate = 16000 ; // 44100 for music
-    private int channelConfig = AudioFormat.CHANNEL_OUT_MONO;
+    private int channelConfig = AudioFormat.CHANNEL_IN_MONO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
     private boolean running = false;

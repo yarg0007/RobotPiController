@@ -7,4 +7,6 @@ public class SettingKeys {
     public static final String sshPassword = "sshPassword";
     public static final String sshPort = "sshPort";
     public static final String sshHost = "sshHost";
+    public static final String serverHttpPort = "serverHttpPort";
+    public static final String videoStreamPort = "videoStreamPort";
 }

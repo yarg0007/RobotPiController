@@ -16,6 +16,8 @@ public class ConfigActivity extends Activity {
 
     EditText videoUrl;
     EditText robotAudioPort;
+    EditText serverHttpPort;
+    EditText videoStreamPort;
     EditText sshHost;
     EditText sshPort;
     EditText sshUsername;
@@ -29,6 +31,8 @@ public class ConfigActivity extends Activity {
 
         videoUrl = findViewById(R.id.video_stream_input);
         robotAudioPort = findViewById(R.id.robot_server_port_input);
+        serverHttpPort = findViewById(R.id.server_http_port_input);
+        videoStreamPort = findViewById(R.id.video_stream_port_input);
         sshHost = findViewById(R.id.ssh_host_field);
         sshPort = findViewById(R.id.ssh_port_field);
         sshUsername = findViewById(R.id.ssh_username_field);
@@ -38,6 +42,8 @@ public class ConfigActivity extends Activity {
         final SharedPreferences sharedPreferences = getSharedPreferences("appsettings", MODE_PRIVATE);
         String savedRtspUrlValue = sharedPreferences.getString(SettingKeys.videoUrl, getResources().getString(R.string.video_stream_input));
         String savedRobotPortValue = sharedPreferences.getString(SettingKeys.robotAudioPort, "");
+        String savedServerHttpPortValue = sharedPreferences.getString(SettingKeys.serverHttpPort, "8001");
+        String savedVideoStreamPortValue = sharedPreferences.getString(SettingKeys.videoStreamPort, "8554");
         String savedSshHostValue = sharedPreferences.getString(SettingKeys.sshHost, getResources().getString(R.string.ssh_host_name_label));
         String savedSshPortValue = sharedPreferences.getString(SettingKeys.sshPort, getResources().getString(R.string.ssh_host_port_input));
         String savedSshUsernameValue = sharedPreferences.getString(SettingKeys.sshUsername, getResources().getString(R.string.ssh_userame_label));
@@ -45,6 +51,8 @@ public class ConfigActivity extends Activity {
 
         videoUrl.setText(savedRtspUrlValue);
         robotAudioPort.setText(savedRobotPortValue);
+        serverHttpPort.setText(savedServerHttpPortValue);
+        videoStreamPort.setText(savedVideoStreamPortValue);
         sshHost.setText(savedSshHostValue);
         sshPort.setText(savedSshPortValue);
         sshUsername.setText(savedSshUsernameValue);
@@ -57,6 +65,8 @@ public class ConfigActivity extends Activity {
 
                 String rtspValue = videoUrl.getText().toString();
                 String robotPortValue = robotAudioPort.getText().toString();
+                String serverHttpPortValue = serverHttpPort.getText().toString();
+                String videoStreamPortValue = videoStreamPort.getText().toString();
                 String sshHostValue = sshHost.getText().toString();
                 String sshPortValue = sshPort.getText().toString();
                 String sshUsernameValue = sshUsername.getText().toString();
@@ -64,6 +74,8 @@ public class ConfigActivity extends Activity {
 
                 sharedPreferencesEditor.putString(SettingKeys.videoUrl, rtspValue);
                 sharedPreferencesEditor.putString(SettingKeys.robotAudioPort, robotPortValue);
+                sharedPreferencesEditor.putString(SettingKeys.serverHttpPort, serverHttpPortValue);
+                sharedPreferencesEditor.putString(SettingKeys.videoStreamPort, videoStreamPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshHost, sshHostValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshPort, sshPortValue);
                 sharedPreferencesEditor.putString(SettingKeys.sshUsername, sshUsernameValue);

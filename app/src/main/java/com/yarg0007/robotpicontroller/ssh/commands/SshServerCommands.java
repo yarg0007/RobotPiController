@@ -49,9 +49,9 @@ public final class SshServerCommands {
      * @return Command and expect pairs.
      */
     public static SshCommandPayload getStartServerPayload() {
-        // TODO: finish
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
-        commands.add(new CommandExpectPair("nohup sudo java -cp RobotPiServer-0.0.1-SNAPSHOT.jar:pi4j-core-1.0.jar com.yarg.robotpiserver.RobotPiServer &", "$"));
+        commands.add(new CommandExpectPair("pkill -f RobotPiServer 2>/dev/null; true", "$"));
+        commands.add(new CommandExpectPair("nohup java -jar RobotPiServer-0.0.1-SNAPSHOT-jar-with-dependencies.jar > /tmp/robotpi.log 2>&1 &", "$"));
 
         return new SshCommandPayload(startServerId, commands);
     }
@@ -63,7 +63,7 @@ public final class SshServerCommands {
     public static SshCommandPayload getStopServerPayload() {
         // TODO: finish - confirm that this is the best way to end the server
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
-        commands.add(new CommandExpectPair("sudo pkill -f 'java -cp'", "$"));
+        commands.add(new CommandExpectPair("pkill -f RobotPiServer 2>/dev/null; true", "$"));
 
         return new SshCommandPayload(stopServerId, commands);
     }
