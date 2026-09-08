@@ -63,6 +63,13 @@ public class ControllerInputThread extends Thread {
         running = false;
     }
 
+    /** Package-private constructor for tests: inject a pre-built data client. */
+    ControllerInputThread(ControllerInputData inputData, ControllerDataClient controllerDataClient) {
+        this.inputData = inputData;
+        this.controllerDataClient = controllerDataClient;
+        running = false;
+    }
+
     /**
      * Set the audio controls to interface with.
      * @param audioControls Audio controls to interface with.
@@ -77,6 +84,20 @@ public class ControllerInputThread extends Thread {
     public void startControllerInputThread() {
         running = true;
         this.start();
+    }
+
+    /**
+     * Build the UDP control message from the current input state.
+     * Format: drive,turn,headLift,headTurn,talking,openMouth:?
+     * All motion values are scaled to [-100, 100] integers.
+     * Boolean flags are 1 (true) or 0 (false).
+     */
+    protected String buildControlMessage(float drive, float turn, float headLift, float headTurn,
+                                         boolean talking, boolean openMouth) {
+        return String.format("%d,%d,%d,%d,%d,%d:?",
+                (int)(100 * drive), (int)(100 * turn),
+                (int)(100 * headLift), (int)(100 * headTurn),
+                talking ? 1 : 0, openMouth ? 1 : 0);
     }
 
     /**
@@ -152,7 +173,7 @@ public class ControllerInputThread extends Thread {
                 talkingInput = true;
             }
 
-            String dataMsg = String.format("%d,%d,%d,%d,%d,%d:?", (int)(100*driveInput), (int)(100*turnInput), (int)(100*headLiftInput), (int)(100*headTurnInput), (talkingInput ? 1 : 0), (openMouthInput ? 1 : 0));
+            String dataMsg = buildControlMessage(driveInput, turnInput, headLiftInput, headTurnInput, talkingInput, openMouthInput);
 
             controllerDataClient.sendData(dataMsg);
 
