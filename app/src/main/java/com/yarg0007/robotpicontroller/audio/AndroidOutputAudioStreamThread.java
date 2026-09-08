@@ -28,6 +28,7 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     private boolean sendMicAudio = false;
     private boolean sendAudioFile = false;
+    private boolean isRecording = false;
     private String audioFileToSend = null;
 
     private int port; //49809 (original port for sending audio) or 50005;
@@ -56,7 +57,11 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     void playMicrophone() {
         stopAudioFile();
-        recorder.startRecording();
+        if (!isRecording) {
+            recorder.startRecording();
+            isRecording = true;
+            Log.d(TAG, "Microphone recording started.");
+        }
         sendMicAudio = true;
     }
 
@@ -66,7 +71,10 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     void stopMicrophone() {
         sendMicAudio = false;
-        recorder.stop();
+        if (isRecording) {
+            recorder.stop();
+            isRecording = false;
+        }
     }
 
     @Override
@@ -96,18 +104,19 @@ public class AndroidOutputAudioStreamThread extends Thread {
                 try {
                     audioFileInputStream = new FileInputStream(audioFileToSend);
                 } catch (FileNotFoundException e) {
+                    Log.d(TAG, "Audio file not found: " + audioFileToSend);
                     stopAudioFile();
-                    break;
+                    continue;
                 }
 
                 try {
                     if (audioFileInputStream.read(buffer) == -1) {
                         stopAudioFile();
-                        break;
+                        continue;
                     }
                 } catch (IOException e) {
                     stopAudioFile();
-                    break;
+                    continue;
                 }
             }
 

@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -31,7 +33,10 @@ import com.yarg0007.robotpicontroller.ssh.SshManager;
 import com.yarg0007.robotpicontroller.widgets.Joypad;
 import com.yarg0007.robotpicontroller.widgets.VideoStream;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData, SshCommandCompletionObserver, ServerConnectionObserver {
@@ -45,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
     Button openMouthButton;
     ToggleButton playAudioToggleButton;
     Button speakButton;
+    private volatile boolean speakButtonHeld = false;
 
     Joypad leftJoypad;
     Joypad rightJoypad;
@@ -77,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
                     new String[]{Manifest.permission.RECORD_AUDIO}, 1);
         }
 
+        copyAudioFilesToInternalStorage();
+
         videoStreamView = findViewById(R.id.video_layout);
 
         configButton = findViewById(R.id.config_button);
@@ -85,6 +93,15 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         openMouthButton = findViewById(R.id.open_mouth_button);
         playAudioToggleButton = findViewById(R.id.play_audio_toggle_button);
         speakButton = findViewById(R.id.speak_button);
+        speakButton.setOnTouchListener((v, event) -> {
+            int action = event.getAction();
+            if (action == MotionEvent.ACTION_DOWN) {
+                speakButtonHeld = true;
+            } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                speakButtonHeld = false;
+            }
+            return false;
+        });
 
         stickyHead = findViewById(R.id.stickyhead);
 
@@ -315,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public boolean getTalking() {
-        return speakButton.isPressed();
+        return speakButtonHeld;
     }
 
     @Override
@@ -325,7 +342,27 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public String getSelectedAudioFilePath() {
-        return audioSpinner.getSelectedItem().toString();
+        String filename = audioSpinner.getSelectedItem().toString();
+        return new File(getFilesDir(), filename).getAbsolutePath();
+    }
+
+    private void copyAudioFilesToInternalStorage() {
+        String[] audioFiles = getResources().getStringArray(R.array.audio_files);
+        for (String filename : audioFiles) {
+            File dest = new File(getFilesDir(), filename);
+            if (dest.exists()) continue;
+            String resourceName = filename.replace(".wav", "");
+            int resId = getResources().getIdentifier(resourceName, "raw", getPackageName());
+            if (resId == 0) continue;
+            try (InputStream in = getResources().openRawResource(resId);
+                 FileOutputStream out = new FileOutputStream(dest)) {
+                byte[] buf = new byte[4096];
+                int n;
+                while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+            } catch (IOException e) {
+                Log.e("MainActivity", "Failed to copy audio file: " + filename);
+            }
+        }
     }
 
     @Override
