@@ -8,7 +8,7 @@ import android.view.SurfaceView;
 
 import java.io.IOException;
 
-public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, SurfaceHolder.Callback {
+public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener, MediaPlayer.OnCompletionListener, SurfaceHolder.Callback {
 
     private static final int MAX_RETRIES = 5;
     private static final int RETRY_DELAY_MS = 3000;
@@ -72,6 +72,7 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
         mediaPlayer.setDisplay(getHolder());
         mediaPlayer.setOnPreparedListener(this);
         mediaPlayer.setOnErrorListener(this);
+        mediaPlayer.setOnCompletionListener(this);
 
         String uri = "rtsp://" + streamHost + ":" + streamPort + "/";
         try {
@@ -100,6 +101,18 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
+        scheduleRetry();
+        return true;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        // Fired when the RTSP server sends BYE (VLC terminates the session).
+        // MediaPlayer does not fire onError in this case, so we retry here.
+        scheduleRetry();
+    }
+
+    private void scheduleRetry() {
         releaseMediaPlayer();
         if (wantPlaying && retryCount < MAX_RETRIES && surfaceReady) {
             retryCount++;
@@ -112,7 +125,6 @@ public class VideoStream extends SurfaceView implements MediaPlayer.OnPreparedLi
                 }
             }, RETRY_DELAY_MS);
         }
-        return true;
     }
 
     @Override
