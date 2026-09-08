@@ -3,11 +3,22 @@ package com.yarg0007.robotpicontroller.server;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URL;
 
 public class ServerConnectionClient {
 
     private static final int TIMEOUT_MS = 10000;
+
+    public boolean isServerRunning(String host, int port) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 3000);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
 
     public boolean connect(String host, int port) throws IOException {
         URL url = new URL("http://" + host + ":" + port + "/connect");

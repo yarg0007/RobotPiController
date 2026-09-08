@@ -30,6 +30,13 @@
 
     <string name="save_button">Save</string>
 
+    <string name="start_server_button">Start Server via SSH</string>
+    <string name="server_already_running">The server is already running. Return to the main screen and tap Connect.</string>
+    <string name="server_not_running_prompt">The server is not running. Would you like to start it on the Pi via SSH?</string>
+    <string name="server_started">Server started successfully. Return to the main screen and tap Connect.</string>
+    <string name="checking_server">Checking…</string>
+    <string name="starting_server">Starting…</string>
+
     <string name="connect_alert_title">Error</string>
     <string name="connect_alert_message_rtsp">RTSP URL was not set. Please specify a RTSP URL in the config settings.</string>
     <string name="connect_alert_message_robot_host">Robot host was not set. Please specify a host for your robot.</string>
