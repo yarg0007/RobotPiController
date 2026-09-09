@@ -279,7 +279,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         }
 
         if (controllerInputThread == null) {
-            controllerInputThread = new ControllerInputThread(MainActivity.this, savedSshHostValue, Integer.valueOf(savedRobotAudioport));
+            // InputControlServer hardcodes port 49801; the audio port setting is unrelated.
+            controllerInputThread = new ControllerInputThread(MainActivity.this, savedSshHostValue, 49801);
             controllerInputThread.setAudioControls(audioStreamClient);
             controllerInputThread.startControllerInputThread();
         }

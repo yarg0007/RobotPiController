@@ -38,7 +38,7 @@ public class AndroidInputAudioStreamThread extends Thread {
 
      */
 
-    private static final int SAMPLE_RATE = 16000; // Hertz — must match server AudioFormatUtil
+    private static final int SAMPLE_RATE = 44100; // Hertz — must match server AudioFormatUtil
     private static final int BUF_SIZE = 4096; // Bytes — sized to fit Pi's send packets (~2048 bytes)
 
     private int serverPort;

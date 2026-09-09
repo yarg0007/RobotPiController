@@ -19,7 +19,9 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     private AudioRecord recorder;
 
-    private int sampleRate = 16000;
+    // 44100 Hz is one of two rates the C-Media USB adapter supports natively (44100 and 48000).
+    // Using 16000 forced ALSA to resample 3x in software on the slow ARMv6 Pi, causing pops.
+    private int sampleRate = 44100;
     private int channelConfig = AudioFormat.CHANNEL_IN_MONO;
     private int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int minBufSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
@@ -32,8 +34,8 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     // Persistent stream kept open across loop iterations so the file plays through
     private FileInputStream audioStream = null;
-    // 16 kHz * 2 bytes per sample (16-bit mono)
-    private static final int BYTES_PER_SEC = 16000 * 2;
+    // 44.1 kHz * 2 bytes per sample (16-bit mono)
+    private static final int BYTES_PER_SEC = 44100 * 2;
 
     private int port;
     private final InetAddress host;
@@ -122,10 +124,16 @@ public class AndroidOutputAudioStreamThread extends Thread {
         while (running) {
 
             if (sendMicAudio) {
-                minBufSize = recorder.read(buffer, 0, buffer.length);
-            }
-
-            if (sendAudioFile) {
+                int bytesRead = recorder.read(buffer, 0, buffer.length);
+                if (bytesRead > 0) {
+                    packet = new DatagramPacket(buffer, bytesRead, host, port);
+                    try {
+                        socket.send(packet);
+                    } catch (IOException e) {
+                        Log.d(TAG, "IOException sending mic audio.");
+                    }
+                }
+            } else if (sendAudioFile) {
                 // Open the stream once; keep it open across iterations so the file plays through
                 if (audioStream == null) {
                     try {
@@ -160,16 +168,12 @@ public class AndroidOutputAudioStreamThread extends Thread {
                 try {
                     Thread.sleep(buffer.length * 1000L / BYTES_PER_SEC);
                 } catch (InterruptedException ignored) {}
-            }
 
-            if (sendMicAudio || sendAudioFile) {
                 packet = new DatagramPacket(buffer, buffer.length, host, port);
                 try {
                     socket.send(packet);
                 } catch (IOException e) {
-                    Log.d(TAG, "IOException sending audio data.");
-                } catch (NullPointerException npe) {
-                    Log.d(TAG, "Null pointer exception while sending audio data.");
+                    Log.d(TAG, "IOException sending audio file data.");
                 }
             }
         }
