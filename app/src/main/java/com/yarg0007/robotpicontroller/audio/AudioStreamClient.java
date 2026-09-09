@@ -17,7 +17,11 @@ public class AudioStreamClient implements AudioControls {
 
     public AudioStreamClient(String host, int port) throws UnknownHostException {
         androidOutputAudioStreamThread = new AndroidOutputAudioStreamThread(host, port);
-        androidInputAudioStreamThread = new AndroidInputAudioStreamThread(port);
+        androidInputAudioStreamThread = new AndroidInputAudioStreamThread(port - 1);
+    }
+
+    public void setOnAudioFileCompleteListener(Runnable listener) {
+        androidOutputAudioStreamThread.setFileCompleteListener(listener);
     }
 
     public void startConnection() {

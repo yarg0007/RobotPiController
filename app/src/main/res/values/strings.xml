@@ -23,7 +23,19 @@
     <string name="server_port_label">Robot audio port</string>
     <string name="server_port_hint">49801</string>
 
+    <string name="server_http_port_label">HTTP port</string>
+    <string name="server_http_port_hint">8001</string>
+    <string name="video_stream_port_label">Video port</string>
+    <string name="video_stream_port_hint">5000</string>
+
     <string name="save_button">Save</string>
+
+    <string name="start_server_button">Start Server via SSH</string>
+    <string name="server_already_running">The server is already running. Return to the main screen and tap Connect.</string>
+    <string name="server_not_running_prompt">The server is not running. Would you like to start it on the Pi via SSH?</string>
+    <string name="server_started">Server started successfully. Return to the main screen and tap Connect.</string>
+    <string name="checking_server">Checking…</string>
+    <string name="starting_server">Starting…</string>
 
     <string name="connect_alert_title">Error</string>
     <string name="connect_alert_message_rtsp">RTSP URL was not set. Please specify a RTSP URL in the config settings.</string>
@@ -43,24 +55,4 @@
     <string name="ssh_connection_failure">The SSH connection failed.</string>
     <string name="ssh_connection_timeout">The SSH connection timed out waiting for connection.</string>
 
-    <string-array name="audio_files">
-        <item>fart.wav</item>
-        <item>honk.wav</item>
-        <item>jeopardy_final.wav</item>
-        <item>music_going_up_the_country_mid.wav</item>
-        <item>music_going_up_the_country_soft.wav</item>
-        <item>music_master_of_universe.wav</item>
-        <item>price_is_right_fail.wav</item>
-        <item>reverse.wav</item>
-        <item>speak_dig.wav</item>
-        <item>speak_dig_it.wav</item>
-        <item>speak_double_dig.wav</item>
-        <item>speak_i_can_dig_it.wav</item>
-        <item>speak_im_afraid_i_cant_do_that.wav</item>
-        <item>speak_keep_the_change_you_filthy_animal.wav</item>
-        <item>speak_mini_me.wav</item>
-        <item>speak_uber_dig.wav</item>
-        <item>speak_whats_going_on_baby.wav</item>
-        <item>speak_whats_happenin.wav</item>
-    </string-array>
 </resources>
