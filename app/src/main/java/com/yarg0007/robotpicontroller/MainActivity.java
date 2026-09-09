@@ -366,22 +366,22 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
 
     @Override
     public float getDriveInput() {
-        return leftJoypad.getUserInputYPercentage();
+        return -leftJoypad.getUserInputYPercentage();
     }
 
     @Override
     public float getTurnInput() {
-        return leftJoypad.getUserInputXPercentage();
+        return -leftJoypad.getUserInputXPercentage();
     }
 
     @Override
     public float getHeadLiftInput() {
-        return rightJoypad.getUserInputYPercentage();
+        return -rightJoypad.getUserInputYPercentage();
     }
 
     @Override
     public float getHeadTurnInput() {
-        return rightJoypad.getUserInputXPercentage();
+        return -rightJoypad.getUserInputXPercentage();
     }
 
     @Override
