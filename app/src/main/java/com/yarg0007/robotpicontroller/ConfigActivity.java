@@ -29,7 +29,6 @@ public class ConfigActivity extends AppCompatActivity implements SshCommandCompl
     EditText sshPort;
     EditText sshUsername;
     EditText sshPassword;
-    Button backButton;
     Button saveButton;
     Button startServerButton;
 
@@ -39,9 +38,6 @@ public class ConfigActivity extends AppCompatActivity implements SshCommandCompl
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
-
-        backButton = findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> finish());
 
         videoUrl = findViewById(R.id.video_stream_input);
         robotAudioPort = findViewById(R.id.robot_server_port_input);
