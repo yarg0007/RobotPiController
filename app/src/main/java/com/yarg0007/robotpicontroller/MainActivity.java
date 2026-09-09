@@ -275,6 +275,17 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         if (audioStreamClient == null) {
             try {
                 audioStreamClient = new AudioStreamClient(savedSshHostValue, Integer.parseInt(savedRobotAudioport));
+                audioStreamClient.setOnAudioFileCompleteListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                playAudioToggleButton.setChecked(false);
+                            }
+                        });
+                    }
+                });
                 audioStreamClient.startConnection();
             } catch (UnknownHostException e) {
                 audioStreamClient = null;

@@ -32,6 +32,13 @@ public class AndroidOutputAudioStreamThread extends Thread {
     private boolean isRecording = false;
     private String audioFileToSend = null;
 
+    // Set to true when the file reaches EOF naturally; cleared on explicit stop or new file.
+    // Prevents ControllerInputThread's 40ms polling from immediately restarting the same file.
+    private volatile boolean fileEndedNaturally = false;
+
+    // Called on the audio thread when a file reaches EOF. Use to update UI state.
+    private Runnable fileCompleteListener = null;
+
     // Persistent stream kept open across loop iterations so the file plays through
     private FileInputStream audioStream = null;
     // 44.1 kHz * 2 bytes per sample (16-bit mono)
@@ -55,12 +62,21 @@ public class AndroidOutputAudioStreamThread extends Thread {
         running = false;
     }
 
+    void setFileCompleteListener(Runnable listener) {
+        fileCompleteListener = listener;
+    }
+
     void playAudioFile(String audioFilePath) {
         stopMicrophone();
-        // If a different file is requested, close the current stream so the new one opens fresh
         if (!audioFilePath.equals(audioFileToSend)) {
+            // New file selected: reset so it can play from the beginning.
             closeAudioStream();
             audioFileToSend = audioFilePath;
+            fileEndedNaturally = false;
+        }
+        if (fileEndedNaturally) {
+            // File already played to completion; don't restart until a new file is chosen.
+            return;
         }
         sendAudioFile = true;
     }
@@ -77,6 +93,7 @@ public class AndroidOutputAudioStreamThread extends Thread {
 
     void stopAudioFile() {
         sendAudioFile = false;
+        fileEndedNaturally = false; // reset so the file can be played again if re-selected
         closeAudioStream();
     }
 
@@ -155,7 +172,9 @@ public class AndroidOutputAudioStreamThread extends Thread {
                 }
 
                 if (bytesRead == -1) {
-                    stopAudioFile(); // reached end of file
+                    fileEndedNaturally = true;
+                    stopAudioFile();
+                    if (fileCompleteListener != null) fileCompleteListener.run();
                     continue;
                 }
 

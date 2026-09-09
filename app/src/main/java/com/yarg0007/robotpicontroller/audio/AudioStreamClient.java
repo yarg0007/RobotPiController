@@ -20,6 +20,10 @@ public class AudioStreamClient implements AudioControls {
         androidInputAudioStreamThread = new AndroidInputAudioStreamThread(port - 1);
     }
 
+    public void setOnAudioFileCompleteListener(Runnable listener) {
+        androidOutputAudioStreamThread.setFileCompleteListener(listener);
+    }
+
     public void startConnection() {
         androidOutputAudioStreamThread.startConnection();
         androidInputAudioStreamThread.startAudioStreamSpeakers();
