@@ -91,7 +91,7 @@ public class AndroidInputAudioStreamThread extends Thread {
                 DatagramPacket packet = new DatagramPacket(buf, BUF_SIZE);
                 socket.receive(packet);
                 Log.i("SPEAKER", "Packet received: " + packet.getLength());
-                track.write(packet.getData(), 0, BUF_SIZE);
+                track.write(packet.getData(), 0, packet.getLength());
             }
 
             // Stop playing back and release resources

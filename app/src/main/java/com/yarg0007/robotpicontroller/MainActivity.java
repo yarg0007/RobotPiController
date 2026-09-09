@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                updateConnectionStatus("Starting video...");
+                hideConnectionOverlay();
                 createOrRestoreConnections();
             }
         });

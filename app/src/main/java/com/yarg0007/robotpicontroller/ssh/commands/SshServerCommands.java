@@ -50,8 +50,7 @@ public final class SshServerCommands {
      */
     public static SshCommandPayload getStartServerPayload() {
         ArrayList<CommandExpectPair> commands = new ArrayList<>();
-        commands.add(new CommandExpectPair("pkill -f RobotPiServer 2>/dev/null; true", "$"));
-        commands.add(new CommandExpectPair("nohup java -jar RobotPiServer-0.0.1-SNAPSHOT-jar-with-dependencies.jar > /tmp/robotpi.log 2>&1 &", "$"));
+        commands.add(new CommandExpectPair("sudo systemctl restart robotpiserver", "$"));
 
         return new SshCommandPayload(startServerId, commands);
     }
