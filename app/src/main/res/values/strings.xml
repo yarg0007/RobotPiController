@@ -55,24 +55,4 @@
     <string name="ssh_connection_failure">The SSH connection failed.</string>
     <string name="ssh_connection_timeout">The SSH connection timed out waiting for connection.</string>
 
-    <string-array name="audio_files">
-        <item>fart.wav</item>
-        <item>honk.wav</item>
-        <item>jeopardy_final.wav</item>
-        <item>music_going_up_the_country_mid.wav</item>
-        <item>music_going_up_the_country_soft.wav</item>
-        <item>music_master_of_universe.wav</item>
-        <item>price_is_right_fail.wav</item>
-        <item>reverse.wav</item>
-        <item>speak_dig.wav</item>
-        <item>speak_dig_it.wav</item>
-        <item>speak_double_dig.wav</item>
-        <item>speak_i_can_dig_it.wav</item>
-        <item>speak_im_afraid_i_cant_do_that.wav</item>
-        <item>speak_keep_the_change_you_filthy_animal.wav</item>
-        <item>speak_mini_me.wav</item>
-        <item>speak_uber_dig.wav</item>
-        <item>speak_whats_going_on_baby.wav</item>
-        <item>speak_whats_happenin.wav</item>
-    </string-array>
 </resources>

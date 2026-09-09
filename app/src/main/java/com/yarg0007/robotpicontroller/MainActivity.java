@@ -42,7 +42,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ControllerInputData, SshCommandCompletionObserver, ServerConnectionObserver, VideoStream.OnVideoStartedListener {
 
@@ -102,12 +106,13 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         connectionElapsedText = findViewById(R.id.connection_elapsed_text);
 
         videoStreamView = findViewById(R.id.video_layout);
+        videoStreamView.setScaleX(-1f); // mirror horizontally to correct left/right
         videoStreamView.setOnVideoStartedListener(this);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
         audioTrackList = findViewById(R.id.audio_track_list);
-        String[] audioFiles = getResources().getStringArray(R.array.audio_files);
+        String[] audioFiles = getRawAudioFiles();
         ArrayAdapter<String> audioAdapter = new ArrayAdapter<>(
                 this, R.layout.list_item_audio_track, android.R.id.text1, audioFiles);
         audioTrackList.setAdapter(audioAdapter);
@@ -407,8 +412,23 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         return new File(getFilesDir(), filename).getAbsolutePath();
     }
 
+    /**
+     * Returns sorted filenames (e.g. "fart.wav") for every file in res/raw.
+     * R.raw strips the file extension, so each field name is the basename; we
+     * append ".wav" to reconstruct the original filename. Adding a new file to
+     * res/raw automatically includes it here with no other changes required.
+     */
+    private String[] getRawAudioFiles() {
+        List<String> names = new ArrayList<>();
+        for (Field field : R.raw.class.getDeclaredFields()) {
+            names.add(field.getName() + ".wav");
+        }
+        Collections.sort(names);
+        return names.toArray(new String[0]);
+    }
+
     private void copyAudioFilesToInternalStorage() {
-        String[] audioFiles = getResources().getStringArray(R.array.audio_files);
+        String[] audioFiles = getRawAudioFiles();
         for (String filename : audioFiles) {
             File dest = new File(getFilesDir(), filename);
             if (dest.exists()) continue;
