@@ -106,8 +106,7 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         connectionElapsedText = findViewById(R.id.connection_elapsed_text);
 
         videoStreamView = findViewById(R.id.video_layout);
-        videoStreamView.setScaleX(-1f); // mirror horizontally to correct left/right
-        videoStreamView.setOnVideoStartedListener(this);
+videoStreamView.setOnVideoStartedListener(this);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
