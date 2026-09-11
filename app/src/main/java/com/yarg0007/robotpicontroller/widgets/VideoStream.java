@@ -1,13 +1,13 @@
 package com.yarg0007.robotpicontroller.widgets;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.view.TextureView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +27,12 @@ import java.util.Arrays;
  * and supplied as CSD-0/CSD-1 so the decoder configures itself before the first
  * IDR frame arrives.
  *
+ * Uses TextureView (not SurfaceView) so that view transforms like setScaleX(-1f)
+ * are applied to the rendered video content.
+ *
  * Typical latency is 100-300 ms — no RTSP session, no VLC jitter buffer.
  */
-public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
+public class VideoStream extends TextureView implements TextureView.SurfaceTextureListener {
 
     public interface OnVideoStartedListener {
         void onVideoStarted();
@@ -46,26 +49,27 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
     private int streamPort;
     private volatile boolean wantPlaying = false;
     private volatile boolean surfaceReady = false;
+    private Surface surface;
     private Thread streamThread;
 
     public VideoStream(Context context) {
         super(context);
-        getHolder().addCallback(this);
+        setSurfaceTextureListener(this);
     }
 
     public VideoStream(Context context, AttributeSet attrs) {
         super(context, attrs);
-        getHolder().addCallback(this);
+        setSurfaceTextureListener(this);
     }
 
     public VideoStream(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        getHolder().addCallback(this);
+        setSurfaceTextureListener(this);
     }
 
     public VideoStream(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
-        getHolder().addCallback(this);
+        setSurfaceTextureListener(this);
     }
 
     public void configure(String host, int port) {
@@ -97,7 +101,7 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void launchStreamThread() {
-        final Surface surface = getHolder().getSurface();
+        final Surface s = surface;
         streamThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -135,7 +139,7 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
                         format.setByteBuffer("csd-1", ByteBuffer.wrap(stripStartCode(pps)));
 
                         codec = MediaCodec.createDecoderByType("video/avc");
-                        codec.configure(format, surface, null, 0);
+                        codec.configure(format, s, null, 0);
                         codec.start();
 
                         notifyVideoStarted();
@@ -240,7 +244,7 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
 
     private void notifyVideoStarted() {
         if (onVideoStartedListener != null) {
-            getHandler().post(new Runnable() {
+            post(new Runnable() {
                 @Override
                 public void run() {
                     if (onVideoStartedListener != null) {
@@ -251,8 +255,13 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // TextureView.SurfaceTextureListener
+    // -------------------------------------------------------------------------
+
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
+        surface = new Surface(surfaceTexture);
         surfaceReady = true;
         if (wantPlaying && (streamThread == null || !streamThread.isAlive())) {
             launchStreamThread();
@@ -260,16 +269,25 @@ public class VideoStream extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int width, int height) {
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         surfaceReady = false;
         if (streamThread != null) {
             streamThread.interrupt();
             streamThread = null;
         }
+        if (surface != null) {
+            surface.release();
+            surface = null;
+        }
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
     }
 
     /**

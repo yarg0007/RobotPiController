@@ -106,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements ControllerInputDa
         connectionElapsedText = findViewById(R.id.connection_elapsed_text);
 
         videoStreamView = findViewById(R.id.video_layout);
-videoStreamView.setOnVideoStartedListener(this);
+        videoStreamView.setScaleX(-1f);
+        videoStreamView.setOnVideoStartedListener(this);
 
         configButton = findViewById(R.id.config_button);
         connectButton = findViewById(R.id.connect_button);
